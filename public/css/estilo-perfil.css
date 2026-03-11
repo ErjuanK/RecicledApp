@@ -1,0 +1,309 @@
+/* Variables de Color (basadas en requerimiento) */
+:root {
+    --morado-principal: #6F00D0;
+    --morado-oscuro: #4A008C;
+    --morado-claro-bg: #F3E5F5;
+    /* Un fondo muy suave para decoraciones si es necesario */
+    --blanco-puro: #FFFFFF;
+    --gris-fondo: #f8f9fa;
+    --gris-texto: #666666;
+    --gris-texto-oscuro: #333333;
+    --rojo-alerta-bg: #FFF5F5;
+    --rojo-alerta-texto: #D32F2F;
+    --sombra-suave: 0 10px 30px rgba(0, 0, 0, 0.05);
+    --borde-radio: 15px;
+}
+
+body {
+    background-color: var(--gris-fondo);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Fallback limpio */
+}
+
+/* Contenedor Principal Flotante */
+.contenedor-perfil {
+    max-width: 900px;
+    margin: 40px auto;
+    background-color: var(--blanco-puro);
+    border-radius: var(--borde-radio);
+    box-shadow: var(--sombra-suave);
+    padding: 0;
+    overflow: hidden;
+    /* Para que el borde radius corte el contenido si es necesario */
+}
+
+/* --- Header del Perfil --- */
+.tarjeta-perfil-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 40px;
+    border-bottom: 1px solid #eee;
+}
+
+.info-usuario-izquierda {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.avatar-grande-contenedor {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--morado-principal);
+    /* Borde decorativo como en la imagen? No se ve explícito, pero queda bien */
+    flex-shrink: 0;
+}
+
+.avatar-grande {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.datos-texto-usuario h1 {
+    margin: 0;
+    font-size: 1.8rem;
+    color: var(--gris-texto-oscuro);
+    font-weight: 700;
+}
+
+.email-usuario {
+    margin: 5px 0 0;
+    color: var(--gris-texto);
+    font-size: 1rem;
+}
+
+.acciones-usuario-derecha {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 20px;
+}
+
+.btn-editar-perfil {
+    background-color: var(--morado-oscuro);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s;
+    text-decoration: none;
+    /* Asegurar que no subraye si es <a> */
+}
+
+.btn-editar-perfil:hover {
+    background-color: var(--morado-principal);
+    color: white;
+}
+
+.icono-favoritos-contenedor {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--morado-principal);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+/* --- Sección Anotaciones --- */
+.seccion-anotaciones {
+    padding: 40px;
+    background-color: #FAFAFA;
+    /* Un gris muy sutil para diferenciar fondo interno */
+}
+
+.seccion-anotaciones h2,
+.seccion-configuracion h3 {
+    margin-top: 0;
+    color: var(--gris-texto-oscuro);
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.lista-anotaciones {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.tarjeta-anotacion {
+    background-color: var(--blanco-puro);
+    border-radius: 10px;
+    display: flex;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
+    position: relative;
+    overflow: hidden;
+    align-items: flex-start;
+}
+
+.borde-lateral-morado {
+    background-color: var(--morado-oscuro);
+    width: 5px;
+    border-radius: 5px;
+    position: absolute;
+    left: 20px;
+    top: 20px;
+    bottom: 20px;
+}
+
+.contenido-anotacion {
+    margin-left: 25px;
+    /* Espacio para la línea */
+}
+
+.meta-anotacion {
+    font-size: 0.9rem;
+    color: var(--gris-texto);
+    margin: 0 0 10px;
+}
+
+.resaltado-morado {
+    color: var(--morado-oscuro);
+    font-weight: 600;
+}
+
+.texto-anotacion {
+    font-style: italic;
+    color: var(--gris-texto-oscuro);
+    margin: 0;
+    line-height: 1.5;
+}
+
+.mensaje-vacio p {
+    color: var(--gris-texto);
+    font-style: italic;
+}
+
+
+.ver-todas-contenedor {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.enlace-ver-todas {
+    color: var(--morado-oscuro);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.enlace-ver-todas:hover {
+    text-decoration: underline;
+}
+
+/* --- Sección Configuración --- */
+.seccion-configuracion {
+    padding: 40px;
+}
+
+.grid-configuracion {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.tarjeta-configuracion {
+    background-color: var(--blanco-puro);
+    border: 1px solid #eee;
+    /* Borde muy sutil */
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    /* Por si es anchor */
+    color: inherit;
+}
+
+.tarjeta-configuracion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+}
+
+.icono-configuracion-contenedor {
+    width: 45px;
+    height: 45px;
+    background-color: #F0E6FA;
+    /* Morado muy claro */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--morado-oscuro);
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+
+.texto-configuracion h4 {
+    margin: 0 0 5px;
+    color: var(--gris-texto-oscuro);
+    font-size: 1rem;
+}
+
+.texto-configuracion p {
+    margin: 0;
+    color: var(--gris-texto);
+    font-size: 0.85rem;
+}
+
+/* Estilo especial para eliminar cuenta */
+.tarjeta-configuracion.peligro {
+    background-color: var(--rojo-alerta-bg);
+    border-color: #ffebee;
+}
+
+.icono-configuracion-contenedor.rojo {
+    background-color: #ffcdd2;
+    color: var(--rojo-alerta-texto);
+}
+
+.texto-rojo {
+    color: var(--rojo-alerta-texto) !important;
+}
+
+.texto-rojo-suave {
+    color: #e57373 !important;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .contenedor-perfil {
+        margin: 20px;
+    }
+
+    .tarjeta-perfil-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 20px;
+    }
+
+    .info-usuario-izquierda {
+        flex-direction: column;
+    }
+
+    .acciones-usuario-derecha {
+        align-items: center;
+        width: 100%;
+    }
+
+    .grid-configuracion {
+        grid-template-columns: 1fr;
+    }
+}

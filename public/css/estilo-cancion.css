@@ -1,0 +1,221 @@
+/* Estilos para la página de Canción - Diseño Split Revisado */
+
+:root {
+    --cancion-bg-color: #ffffff;
+    /* Fondo blanco */
+    --cancion-text-main: #111827;
+    --cancion-text-secondary: #6b7280;
+    --cancion-primary: #581c87;
+    /* Purple accent */
+}
+
+body {
+    background-color: var(--cancion-bg-color);
+    margin: 0;
+}
+
+/* Layout Principal */
+main.contenedor-cancion {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 40px;
+    font-family: 'Open Sans', sans-serif;
+}
+
+.diseño-desglose {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    /* Sidebar fijo 350px, Resto letras */
+    gap: 60px;
+    align-items: start;
+}
+
+/* Sidebar Info (Sticky) */
+.panel-informacion {
+    position: sticky;
+    top: 40px;
+    /* Se queda fijo al scrollear */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.portada-cancion-grande {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.portada-cancion-grande img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.info-metadatos {
+    text-align: left;
+}
+
+.titulo-metadatos {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.1;
+    margin: 0 0 10px 0;
+    color: var(--cancion-text-main);
+}
+
+.artista-metadatos {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--cancion-primary);
+    margin: 0 0 15px 0;
+}
+
+.detalles-metadatos p {
+    color: var(--cancion-text-secondary);
+    font-size: 0.95rem;
+    margin: 5px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Créditos en Sidebar */
+.creditos-metadatos {
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #f3f4f6;
+}
+
+.creditos-metadatos h3 {
+    font-size: 1rem;
+    color: var(--cancion-text-main);
+    margin-bottom: 15px;
+}
+
+.lista-creditos-simple {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.lista-creditos-simple li {
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.lista-creditos-simple .rol {
+    font-weight: 600;
+    color: var(--cancion-text-main);
+}
+
+.lista-creditos-simple .nombre {
+    color: var(--cancion-text-secondary);
+}
+
+
+/* Panel Letra */
+.panel-letra {
+    padding-top: 0;
+    /* Alinear visualmente con la imagen */
+}
+
+/* Nueva clase Minimal Letra */
+.encabezado-letra-minimal {
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    margin-top: 0;
+    margin-bottom: 30px;
+    color: var(--cancion-primary);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.encabezado-letra-minimal::after {
+    content: '';
+    display: block;
+    height: 1px;
+    flex-grow: 1;
+    background-color: #e5e7eb;
+}
+
+/* Etiquetas de la canción [Intro], [Coro], etc. */
+.etiqueta-cancion {
+    color: var(--cancion-primary);
+    font-weight: 700;
+    display: block;
+    /* Para que ocupen su propia línea si es necesario, o inline-block */
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.anotacion-genius {
+    /* Estilos reseteados para solo mostrar texto */
+    background-color: transparent;
+    color: inherit;
+    text-decoration: none;
+    cursor: default;
+}
+
+.contenido-letra-limpio {
+    /* Sin cajas, sin sombras, directo al fondo */
+    font-size: 1.25rem;
+    /* Tamaño legible */
+    line-height: 1.8;
+    color: #1f2937;
+    /* Gris muy oscuro casi negro */
+    white-space: pre-wrap;
+    /* Respetar saltos */
+}
+
+.letra-real {
+    font-family: inherit;
+}
+
+.nota-pie {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    color: #9ca3af;
+}
+
+.enlace-genius {
+    color: var(--cancion-primary);
+    text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+    .diseño-desglose {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .panel-informacion {
+        position: static;
+        /* Ya no sticky en móvil */
+        align-items: center;
+        text-align: center;
+    }
+
+    .info-metadatos {
+        text-align: center;
+    }
+
+    .portada-cancion-grande {
+        width: 250px;
+        /* Más pequeño en móvil */
+        margin: 0 auto;
+    }
+
+    .detalles-metadatos p {
+        justify-content: center;
+    }
+}

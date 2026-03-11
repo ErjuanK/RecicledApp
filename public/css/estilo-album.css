@@ -1,0 +1,219 @@
+/* Estilos para la página de Album */
+
+:root {
+    --album-primary-color: #581c87;
+    /* Purple from header */
+    --album-bg-color: #ffffff;
+    --album-text-main: #111827;
+    --album-text-secondary: #6b7280;
+    --album-hover-bg: #f3f4f6;
+}
+
+body {
+    background-color: var(--album-bg-color);
+    color: var(--album-text-main);
+    font-family: 'Open Sans', 'Helvetica aue', sans-serif;
+    margin: 0;
+}
+
+main.contenedor-album {
+    padding: 20px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+/* Header Banner */
+.banner-cabecera-album {
+    background-color: var(--album-primary-color);
+    padding: 15px 30px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    color: white;
+}
+
+.titulo-banner-album {
+    margin: 0;
+    font-size: 1.8rem;
+    font-weight: 800;
+}
+
+/* Grid Layout */
+.cuadricula-contenido-album {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 50px;
+}
+
+/* Sidebar */
+.barra-lateral-album {
+    display: flex;
+    flex-direction: column;
+}
+
+.contenedor-portada-album {
+    width: 100%;
+    margin-bottom: 20px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.img-portada-album {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.nombre-album {
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 5px;
+}
+
+.artista-album {
+    font-size: 1.2rem;
+    color: var(--album-text-secondary);
+    font-weight: 400;
+    margin-bottom: 15px;
+}
+
+.descripcion-album {
+    font-size: 0.95rem;
+    color: var(--album-text-secondary);
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.acciones-album {
+    display: flex;
+    gap: 15px;
+}
+
+.boton-icono {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--album-primary-color);
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.2s;
+}
+
+.boton-icono:hover {
+    transform: scale(1.1);
+}
+
+/* Tracks Section */
+.canciones-album {
+    width: 100%;
+}
+
+.cabecera-canciones {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+    font-size: 0.85rem;
+    color: var(--album-text-secondary);
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+.col-titulo {
+    flex: 1;
+    font-size: 1.1rem;
+    /* "Lista de Canciones" bigger */
+    color: var(--album-text-main);
+    text-transform: none;
+    font-weight: 700;
+}
+
+.col-encabezado-titulo {
+    width: 40%;
+    text-align: left;
+    display: none;
+    /* Hidden in design or implied */
+}
+
+.col-reloj {
+    margin-left: auto;
+    padding-right: 20px;
+}
+
+/* Track List */
+.lista-canciones {
+    display: flex;
+    flex-direction: column;
+}
+
+.elemento-cancion {
+    display: flex;
+    align-items: center;
+    padding: 12px 10px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.elemento-cancion:hover {
+    background-color: var(--album-hover-bg);
+}
+
+.numero-cancion-lista {
+    width: 40px;
+    color: var(--album-text-secondary);
+    font-weight: 500;
+}
+
+.info-cancion-lista {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.titulo-cancion-lista {
+    font-weight: 700;
+    color: var(--album-text-main);
+    font-size: 1rem;
+}
+
+.artista-cancion-lista {
+    font-size: 0.85rem;
+    color: var(--album-text-secondary);
+}
+
+.duracion-cancion-lista {
+    color: var(--album-text-secondary);
+    font-weight: 500;
+    margin-right: 20px;
+    font-size: 0.9rem;
+}
+
+.opciones-cancion {
+    color: var(--album-text-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .cuadricula-contenido-album {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .barra-lateral-album {
+        text-align: center;
+    }
+
+    .contenedor-portada-album {
+        max-width: 300px;
+        margin: 0 auto 20px;
+    }
+
+    .acciones-album {
+        justify-content: center;
+    }
+}

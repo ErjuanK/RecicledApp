@@ -1,0 +1,6 @@
+/* interactividad.css */
+.enlace-discreto {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}

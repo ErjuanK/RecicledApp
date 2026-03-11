@@ -1,0 +1,104 @@
+/* Estilos para la búsqueda en vivo */
+
+.contenedor-busqueda {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+#resultados-busqueda {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    width: 100%;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 2px solid #511281;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(81, 18, 129, 0.25);
+    z-index: 1000;
+}
+
+.resultado-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    text-decoration: none;
+    color: #333;
+    border-bottom: 1px solid #e9ecef;
+    transition: all 0.3s ease;
+}
+
+.resultado-item:last-child {
+    border-bottom: none;
+}
+
+.resultado-item:hover {
+    background: linear-gradient(90deg, rgba(81, 18, 129, 0.08) 0%, rgba(153, 109, 186, 0.08) 100%);
+}
+
+.resultado-imagen {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-right: 12px;
+    border: 2px solid #511281;
+}
+
+.resultado-info {
+    flex: 1;
+}
+
+.resultado-nombre {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #511281;
+    margin-bottom: 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resultado-tipo {
+    font-size: 0.85rem;
+    color: #996dba;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.resultado-artista {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.oculto {
+    display: none;
+}
+
+/* Scrollbar personalizado con tema morado */
+#resultados-busqueda::-webkit-scrollbar {
+    width: 8px;
+}
+
+#resultados-busqueda::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+#resultados-busqueda::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #511281 0%, #996dba 100%);
+    border-radius: 10px;
+}
+
+#resultados-busqueda::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2E0249 0%, #511281 100%);
+}
