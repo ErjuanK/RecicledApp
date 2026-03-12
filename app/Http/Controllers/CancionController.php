@@ -40,20 +40,27 @@ class CancionController extends Controller
                 } else {
                     // Try to fetch from Genius based on Title + Artist
                     // This allows local songs to have lyrics automatically if they are famous covers or just indexed
-                    $query = $localCancion->titulo . ' ' . $localCancion->album->artista->nombre_artistico;
+                    $titCancion  = $localCancion->titulo;
+                    $nomArtista  = $localCancion->album->artista->nombre_artistico;
+                    $query = $titCancion . ' ' . $nomArtista;
                     $geniusData = $this->genius->buscarCancion($query);
-                    
+
                     if ($geniusData && isset($geniusData['url'])) {
                         $geniusUrl = $geniusData['url'];
                         $letraHtml = $this->genius->obtenerLetra($geniusUrl);
-                        
-                        if ($letraHtml) {
-                            $newLetra = new \App\Models\Letra();
-                            $newLetra->cancion_id = $localCancion->cancion_id;
-                            $newLetra->contenido = $letraHtml;
-                            $newLetra->save();
-                            $localLetraId = $newLetra->letra_id;
-                        }
+                    }
+
+                    // Si Genius fue bloqueado (producción), intentar APIs alternativas
+                    if (!$letraHtml) {
+                        $letraHtml = $this->genius->obtenerLetraFallback($nomArtista, $titCancion);
+                    }
+
+                    if ($letraHtml) {
+                        $newLetra = new \App\Models\Letra();
+                        $newLetra->cancion_id = $localCancion->cancion_id;
+                        $newLetra->contenido = $letraHtml;
+                        $newLetra->save();
+                        $localLetraId = $newLetra->letra_id;
                     }
                 }
 
@@ -114,30 +121,44 @@ class CancionController extends Controller
                     $localLetraId = $localLetra->letra_id;
                     $anotaciones = $localLetra->anotaciones()->where('estado', 'aprobada')->get();
                 } else {
-                    // Fetch from Genius and Save
-                    $query = $trackData['name'] . ' ' . $trackData['artists'][0]['name'];
+                    $titTrack   = $trackData['name'];
+                    $nomArtTrack = $trackData['artists'][0]['name'];
+                    $query = $titTrack . ' ' . $nomArtTrack;
                     $geniusData = $this->genius->buscarCancion($query);
-                    
+
                     if ($geniusData && isset($geniusData['url'])) {
-                        $geniusUrl = $geniusData['url'];
-                        $letraHtml = $this->genius->obtenerLetra($geniusUrl);
-                        
-                        if ($letraHtml) {
-                            $newLetra = new \App\Models\Letra();
-                            $newLetra->cancion_id = $localCancion->cancion_id;
-                            $newLetra->contenido = $letraHtml;
-                            $newLetra->save();
-                            $localLetraId = $newLetra->letra_id;
-                        }
+                        $geniusUrl  = $geniusData['url'];
+                        $letraHtml  = $this->genius->obtenerLetra($geniusUrl);
+                    }
+
+                    // Fallback si Cloudflare bloqueó Genius
+                    if (!$letraHtml) {
+                        $letraHtml = $this->genius->obtenerLetraFallback($nomArtTrack, $titTrack);
+                    }
+
+                    if ($letraHtml) {
+                        $newLetra = new \App\Models\Letra();
+                        $newLetra->cancion_id = $localCancion->cancion_id;
+                        $newLetra->contenido  = $letraHtml;
+                        $newLetra->save();
+                        $localLetraId = $newLetra->letra_id;
                     }
                 }
             } else {
                 // Fallback for non-local songs (View only, no annotations)
-                $query = $trackData['name'] . ' ' . $trackData['artists'][0]['name'];
+                $titSong    = $trackData['name'];
+                $nomArtSong = $trackData['artists'][0]['name'];
+                $query = $titSong . ' ' . $nomArtSong;
                 $geniusData = $this->genius->buscarCancion($query);
+
                 if ($geniusData && isset($geniusData['url'])) {
                     $geniusUrl = $geniusData['url'];
                     $letraHtml = $this->genius->obtenerLetra($geniusUrl);
+                }
+
+                // Fallback si Cloudflare bloqueó Genius
+                if (!$letraHtml) {
+                    $letraHtml = $this->genius->obtenerLetraFallback($nomArtSong, $titSong);
                 }
             }
 

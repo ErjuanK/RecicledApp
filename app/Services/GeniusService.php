@@ -123,9 +123,14 @@ class GeniusService {
         ]);
 
         $html = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
-        if (!$html) return null;
+        // Si Cloudflare bloquea (403) o no hay respuesta, devolver null para activar el fallback
+        if (!$html || $httpCode === 403 || $httpCode === 503) {
+            \Log::warning("GeniusService: Bloqueado por Cloudflare en producción (HTTP {$httpCode}). Activar fallback.");
+            return null;
+        }
 
         $dom = new \DOMDocument();
         libxml_use_internal_errors(true); // Suprimir advertencias de HTML mal formado
@@ -140,38 +145,115 @@ class GeniusService {
 
         $htmlLetra = '';
         foreach ($nodos as $nodo) {
-            // Obtener el HTML interno
             $innerHtml = $dom->saveHTML($nodo);
-            
-            // Limpiar etiquetas no deseadas, dejando solo saltos de línea para mantener estructura
             $textoLimpio = strip_tags($innerHtml, '<br>');
-            
             $htmlLetra .= $textoLimpio . '<br>';
         }
 
-        // Limpieza específica de metadatos de Genius (encabezados de colaboradores, etc.)
-        // Patrón: Elimina desde el inicio hasta encontrar "Lyrics" o "[Letra" si va precedido de Contributors, etc.
+        // Limpieza de metadatos de Genius
         $htmlLetra = preg_replace('/^\s*\d+\s*Contributors.*?[\r\n]+.*?(?=\[)/s', '', $htmlLetra);
-        
-        // Limpiar también el "Read More" si queda suelto o cualquier texto antes del primer corchete si parece basura
-        // A veces Genius pone "X Contributors ... Lyrics [Intro]"
-        // Vamos a intentar quitar todo antes del primer bloque entre corchetes si detectamos "Contributors"
-        // Vamos a intentar quitar todo antes del primer bloque entre corchetes si detectamos "Contributors"
         if (stripos($htmlLetra, 'Contributors') !== false) {
              $htmlLetra = preg_replace('/^.*?Contributors.*?((?=\[)|$)/s', '', $htmlLetra);
         }
-
-        // Eliminar específicamente etiqueta inicial tipo [Letra de "Moscow Mule"] o similar
         $htmlLetra = preg_replace('/^\s*\[(Letra|Lyrics)[^\]]*\]\s*/i', '', $htmlLetra);
-
-        // Envolver etiquetas como [Intro], [Coro], [Verso] en un span para estilizarlas
         $htmlLetra = preg_replace('/(\[.*?\])/', '<span class="etiqueta-cancion">$1</span>', $htmlLetra);
-
-        // Limpiar saltos de línea iniciales acumulados
         $htmlLetra = preg_replace('/^(\s*<br\s*\/?>\s*)+/i', '', $htmlLetra);
 
         return $htmlLetra;
     }
+
+    /**
+     * Fallback: busca la letra en LRCLIB.net (API pública y gratuita, sin bloqueos de IP)
+     * Se usa cuando Genius está bloqueado por Cloudflare en producción.
+     * @param string $artista Nombre del artista
+     * @param string $titulo Título de la canción
+     * @return string|null Letra en texto plano o null si no se encuentra
+     */
+    public function obtenerLetraFallback($artista, $titulo) {
+        try {
+            // Intentar primero con LRCLIB
+            $letraLrclib = $this->buscarEnLrclib($artista, $titulo);
+            if ($letraLrclib) {
+                \Log::info("GeniusService: Letra encontrada en LRCLIB para '{$titulo}' de '{$artista}'");
+                return $letraLrclib;
+            }
+
+            // Segundo fallback: Lyrics.ovh
+            $letraOvh = $this->buscarEnLyricsOvh($artista, $titulo);
+            if ($letraOvh) {
+                \Log::info("GeniusService: Letra encontrada en Lyrics.ovh para '{$titulo}' de '{$artista}'");
+                return $letraOvh;
+            }
+        } catch (\Exception $e) {
+            \Log::error("GeniusService: Error en fallback de letras: " . $e->getMessage());
+        }
+
+        return null;
+    }
+
+    /**
+     * Busca letra en LRCLIB.net
+     */
+    private function buscarEnLrclib($artista, $titulo) {
+        $url = 'https://lrclib.net/api/get?' . http_build_query([
+            'artist_name' => $artista,
+            'track_name'  => $titulo,
+        ]);
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER     => ['Accept: application/json'],
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200 || !$response) return null;
+
+        $data = json_decode($response, true);
+
+        // Preferir letra sin tiempo (plainLyrics) sobre la sincronizada (syncedLyrics)
+        $texto = $data['plainLyrics'] ?? $data['syncedLyrics'] ?? null;
+        if (!$texto) return null;
+
+        // Convertir texto plano a HTML con saltos de línea
+        $html = nl2br(htmlspecialchars($texto));
+        // Envolver etiquetas [Intro], [Coro], [Verso] en span estilizable
+        $html = preg_replace('/(\[.*?\])/', '<span class="etiqueta-cancion">$1</span>', $html);
+
+        return $html;
+    }
+
+    /**
+     * Busca letra en Lyrics.ovh como segundo fallback
+     */
+    private function buscarEnLyricsOvh($artista, $titulo) {
+        $url = 'https://api.lyrics.ovh/v1/' . urlencode($artista) . '/' . urlencode($titulo);
+
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_SSL_VERIFYPEER => false,
+            CURLOPT_TIMEOUT        => 10,
+        ]);
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+
+        if ($httpCode !== 200 || !$response) return null;
+
+        $data = json_decode($response, true);
+        if (empty($data['lyrics'])) return null;
+
+        $html = nl2br(htmlspecialchars($data['lyrics']));
+        $html = preg_replace('/(\[.*?\])/', '<span class="etiqueta-cancion">$1</span>', $html);
+
+        return $html;
+    }
+
     /**
      * Obtiene el ID del artista en Genius buscando por nombre
      * @param string $nombre Nombre del artista
