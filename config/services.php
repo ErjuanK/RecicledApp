@@ -40,4 +40,10 @@ return [
         'client_secret' => env('SPOTIFY_CLIENT_SECRET'),
     ],
 
+    'genius' => [
+        'client_id' => env('GENIUS_CLIENT_ID'),
+        'client_secret' => env('GENIUS_CLIENT_SECRET'),
+        'access_token' => env('GENIUS_ACCESS_TOKEN'),
+    ],
+
 ];

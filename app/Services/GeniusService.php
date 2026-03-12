@@ -9,8 +9,8 @@ class GeniusService {
     private $tokenAcceso;
 
     public function __construct() {
-        // Token proporcionado por el usuario
-        $this->tokenAcceso = 'aZwJbhSeaNw7Lb0mYVgla6egpl-fbWHf5tyFKSOGfUVj0jItjyxKE4AJT_dDpXIT';
+        // Token obtenido desde variables de entorno seguras
+        $this->tokenAcceso = config('services.genius.access_token');
     }
 
     /**
