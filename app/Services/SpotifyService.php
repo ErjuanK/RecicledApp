@@ -70,6 +70,11 @@ class SpotifyService {
             return json_decode($response, true);
         }
 
+        if ($http_code === 429) {
+            \Log::warning("Spotify API: Rate Limited (429)");
+            return ['error' => 'rate_limited', 'message' => 'Too many requests'];
+        }
+
         \Log::error("SpotifyService request failed", [
             'url'       => $url,
             'http_code' => $http_code,

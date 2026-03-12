@@ -1,0 +1,11 @@
+/* Estilos específicos para la página de inicio */
+.superior {
+    display: flex;
+    justify-content: space-between;
+    padding: 20px;
+}
+
+.novedades {
+    flex: 1;
+    margin-left: 20px;
+}

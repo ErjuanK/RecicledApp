@@ -12,8 +12,8 @@ class ArtistaController extends Controller
     public function __construct()
     {
         // Cargar servicios sin namespace completo (se ajustará después)
-        $clientId = 'cf0a28b6c1c9425bbfb697f9a072afc8';
-        $clientSecret = '16c9bcf6476e47138c1adc87c82596ea';
+        $clientId = config('services.spotify.client_id');
+        $clientSecret = config('services.spotify.client_secret');
         $this->spotify = new \App\Services\SpotifyService($clientId, $clientSecret);
         $this->genius = new \App\Services\GeniusService();
     }
@@ -89,12 +89,12 @@ class ArtistaController extends Controller
         }
         
         // Fallback or search if not found/valid ID
-        if (!$artistData) {
+        if (!$artistData || isset($artistData['error'])) {
             $artistData = $this->spotify->searchArtist($id);
-            if ($artistData) $id = $artistData['id'];
+            if ($artistData && !isset($artistData['error'])) $id = $artistData['id'];
         }
         
-        if ($artistData) {
+        if ($artistData && !isset($artistData['error'])) {
             $topTracks = $this->spotify->getArtistTopTracks($artistData['id']);
             $albums = $this->spotify->getArtistAlbums($artistData['id'], 8);
             

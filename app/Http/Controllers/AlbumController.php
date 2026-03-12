@@ -10,8 +10,8 @@ class AlbumController extends Controller
     
     public function __construct()
     {
-        $clientId = 'cf0a28b6c1c9425bbfb697f9a072afc8';
-        $clientSecret = '16c9bcf6476e47138c1adc87c82596ea';
+        $clientId = config('services.spotify.client_id');
+        $clientSecret = config('services.spotify.client_secret');
         $this->spotify = new \App\Services\SpotifyService($clientId, $clientSecret);
     }
     
@@ -76,10 +76,48 @@ class AlbumController extends Controller
                     ];
                 }
             }
-            
             return view('album', compact('album'));
-        } else {
-            abort(404, 'Álbum no encontrado');
         }
+
+        // 3. Last Resort: Hardcoded Fallbacks for Carousel Albums (to avoid 404 on front page)
+        $fallbacks = [
+            '0U28P0QVB1QRxpqp5IHOlH' => [
+                'name' => 'CHROMAKOPIA',
+                'artist' => 'Tyler, the Creator',
+                'artist_id' => '4V8LLpRMTZpC3bZ96I7a9G', // Tyler's real ID
+                'image' => asset('multimedia/img/Portadas/album/cromakopia - Tyler the creator.png'),
+                'desc' => 'Chromakopia is the seventh studio album by American rapper Tyler, the Creator.'
+            ],
+            '3SUEJULSGgBDG1j4GQhfYY' => [
+                'name' => 'LUX',
+                'artist' => 'Rosalia',
+                'artist_id' => '7ltDVBr6mKbRvohxheJ9h1',
+                'image' => asset('multimedia/img/Portadas/album/rosalia-lux.webp'),
+                'desc' => 'Un album que fusiona flamenco con ritmos urbanos.'
+            ],
+            '5K79FLRUCSysQnVESLcTdb' => [
+                'name' => 'Debi Tirar Mas Fotos',
+                'artist' => 'Bad Bunny',
+                'artist_id' => '4q3ewBCX7sLwd24euuV69X',
+                'image' => asset('multimedia/img/Portadas/album/dtmf - bad bunny.png'),
+                'desc' => 'Regreso a las raíces del trap del artista.'
+            ]
+        ];
+
+        if (isset($fallbacks[$id])) {
+            $f = $fallbacks[$id];
+            $album = (object)[
+                'id' => $id,
+                'nombre' => $f['name'],
+                'portada_url' => $f['image'],
+                'artista' => $f['artist'],
+                'artista_id' => $f['artist_id'],
+                'descripcion' => $f['desc'],
+                'canciones' => []
+            ];
+            return view('album', compact('album'));
+        }
+
+        abort(404, 'Álbum no encontrado');
     }
 }

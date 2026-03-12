@@ -1,11 +1,11 @@
-@extends('layouts.discovery')
 
-@section('title', 'Descubre tu música')
 
-@section('content')
+<?php $__env->startSection('title', 'Descubre tu música'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div x-data="onboardingFlow()" class="relative min-h-screen pb-28">
 
-    {{-- ===== INTERLUDE OVERLAY ===== --}}
+    
     <div
         x-show="isInterludeActive"
         x-transition:enter="transition ease-out duration-700"
@@ -17,7 +17,7 @@
         class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/90 backdrop-blur-xl"
         style="display: none;"
     >
-        {{-- Animated orbs behind text --}}
+        
         <div class="absolute top-1/3 left-1/4 w-64 h-64 bg-purple-600/20 rounded-full blur-3xl animate-float"></div>
         <div class="absolute bottom-1/3 right-1/4 w-48 h-48 bg-fuchsia-500/20 rounded-full blur-3xl animate-float" style="animation-delay: 1s;"></div>
 
@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    {{-- ===== HEADER ===== --}}
+    
     <div x-show="pageLoaded" 
          x-transition:enter="transition ease-out duration-1000"
          x-transition:enter-start="opacity-0 -translate-y-8"
@@ -45,12 +45,12 @@
          style="display: none;"
          class="relative z-10 max-w-5xl mx-auto px-6 pt-12 pb-8">
         <nav class="flex items-center justify-between mb-8">
-            <a href="{{ route('home') }}" class="flex items-center gap-3 group">
-                <img src="{{ asset('multimedia/img/logo_3d.png') }}" alt="Project Icon" class="h-14 w-14 object-contain transition-transform group-hover:scale-110">
+            <a href="<?php echo e(route('home')); ?>" class="flex items-center gap-3 group">
+                <img src="<?php echo e(asset('multimedia/img/logo_3d.png')); ?>" alt="Project Icon" class="h-14 w-14 object-contain transition-transform group-hover:scale-110">
                 <span class="text-xl  text-gray-800 tracking-tight">| Descubrimientos</span>
             </a>
 
-            {{-- Step indicators --}}
+            
             <div class="flex items-center gap-3">
                 <template x-for="i in 4" :key="i">
                     <div class="flex items-center gap-2">
@@ -72,7 +72,7 @@
         </nav>
     </div>
 
-    {{-- ===== STEP 1: GÉNEROS ===== --}}
+    
     <div x-show="step === 1"
          x-transition:enter="transition ease-out duration-700 delay-300"
          x-transition:enter-start="opacity-0 translate-y-12"
@@ -91,12 +91,12 @@
             <p class="text-lg text-gray-500">Selecciona entre 3 y 5 géneros para empezar.</p>
         </div>
 
-        {{-- Expandable Genre Search Bar --}}
+        
         <div class="w-full max-w-3xl mx-auto flex justify-start mt-10 mb-[-1.5rem] h-12 relative z-20 px-2 md:px-0">
             <div class="relative flex items-center justify-start transform origin-left transition-all duration-500 ease-out" 
                  :class="isGenreSearchExpanded ? 'w-full max-w-sm' : 'w-12'">
                 
-                {{-- Floating Icon Button when collapsed --}}
+                
                 <button 
                     @click="isGenreSearchExpanded = true; $nextTick(() => $refs.genreSearchInput.focus())"
                     x-show="!isGenreSearchExpanded"
@@ -113,7 +113,7 @@
                     </svg>
                 </button>
                 
-                {{-- Full Input when expanded --}}
+                
                 <div x-show="isGenreSearchExpanded"
                      x-transition:enter="transition-all duration-500 ease-out"
                      x-transition:enter-start="opacity-0 scale-95"
@@ -148,9 +148,9 @@
             </div>
         </div>
 
-        {{-- Creative Genre Layout with Connectors --}}
+        
         <div x-show="genres.length > 0" class="mt-12 mb-10 w-full relative" x-ref="genreGridContainer">
-            {{-- SVG Layer for Connections --}}
+            
             <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" style="overflow: visible;">
                 <template x-for="(conn, idx) in gridConnections" :key="idx">
                     <line :x1="conn.x1" :y1="conn.y1" :x2="conn.x2" :y2="conn.y2" stroke="#a855f7" stroke-width="2" class="opacity-60" stroke-linecap="round"></line>
@@ -180,14 +180,14 @@
                     >
                         <span x-text="genre" class="capitalize"></span>
                         
-                        {{-- Small checkmark when selected --}}
+                        
                         <svg x-show="selectedGenres.includes(genre)" class="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white rounded-full p-1 border-2 border-white shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                         </svg>
                     </button>
                 </template>
                 
-                {{-- Empty search state --}}
+                
                 <div x-show="filteredGenres.length === 0 && genres.length > 0" class="w-full py-12 text-center text-gray-500">
                     <i class="fa-solid fa-ghost text-4xl mb-3 opacity-20"></i>
                     <p>No se encontraron géneros que coincidan con "<span x-text="genreSearchQuery"></span>"</p>
@@ -195,7 +195,7 @@
             </div>
         </div>
 
-        {{-- Loading genres --}}
+        
         <div x-show="genres.length === 0" class="flex items-center justify-center py-20 w-full">
             <div class="flex items-center gap-3 text-purple-500">
                 <svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -206,14 +206,14 @@
             </div>
         </div>
 
-        {{-- Interactive Circular Progress + Continue --}}
+        
         <div class="w-full max-w-4xl flex items-end justify-between mt-auto">
             <div class="text-gray-500 text-sm font-medium pt-8">
                 <span x-text="selectedGenres.length" class="text-purple-600 font-bold"></span> / 5 seleccionados
             </div>
             
             <div class="relative flex flex-col items-center">
-                {{-- Circular SVG Progress --}}
+                
                 <svg class="w-28 h-14 overflow-hidden" viewBox="0 0 100 50">
                     <path class="text-gray-200" stroke-width="8" stroke="currentColor" fill="none" stroke-linecap="round" d="M 10,50 A 40,40 0 0,1 90,50" />
                     <!-- Progress arc based on 0-5 -->
@@ -240,7 +240,7 @@
         </div>
     </div>
 
-    {{-- ===== STEP 2: ÁLBUMES ===== --}}
+    
     <div x-show="step === 2"
          x-transition:enter="transition ease-out duration-500"
          x-transition:enter-start="opacity-0 translate-y-8"
@@ -261,7 +261,7 @@
             </div>
 
             <div class="flex flex-col items-end gap-4 w-full md:w-auto">
-                {{-- Search bar --}}
+                
                 <div class="relative w-full md:w-96">
                     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -283,12 +283,12 @@
             </div>
         </div>
 
-        {{-- Main Layout: Left (Grids) and Right (Vertical Selected Items) --}}
+        
         <div class="flex flex-col md:flex-row gap-8 w-full">
             
-            {{-- Left column: Search Results & Suggestions --}}
+            
             <div class="flex-1 flex flex-col">
-                {{-- Album search results (Shown first if results exist) --}}
+                
                 <div x-show="albumResults.length > 0" class="order-1 mb-8">
                     <h3 class="font-bold text-gray-700 mb-4">Resultados de búsqueda</h3>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -298,7 +298,7 @@
                                  :class="selectedAlbums.find(a => a.id === album.id) ? 'ring-2 ring-accent shadow-lg shadow-accent/20 scale-[1.02]' : 'hover:scale-105'">
                                 <div class="relative aspect-square bg-gray-100">
                                     <img :src="album.image || 'https://picsum.photos/seed/' + album.id + '/400/400'" :alt="album.name" class="w-full h-full object-cover">
-                                    {{-- Overlay when selected --}}
+                                    
                                     <div x-show="selectedAlbums.find(a => a.id === album.id)"
                                          class="absolute inset-0 bg-purple-500/40 flex items-center justify-center backdrop-blur-[2px]">
                                         <svg class="w-12 h-12 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
@@ -315,7 +315,7 @@
                     </div>
                 </div>
 
-                {{-- Top Recommended Albums Grid --}}
+                
                 <div x-show="recommendedAlbumsByGenre.length > 0" class="order-2 mb-8">
                     <h3 class="font-bold text-gray-700 mb-4">Sugerencias basadas en tus géneros</h3>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -325,7 +325,7 @@
                                  :class="selectedAlbums.find(a => a.id === album.id) ? 'ring-2 ring-accent shadow-lg shadow-accent/20 scale-[1.02]' : 'hover:scale-105'">
                                 <div class="relative aspect-square bg-gray-100">
                                     <img :src="album.image || 'https://picsum.photos/seed/' + album.id + '/400/400'" :alt="album.name" class="w-full h-full object-cover">
-                                    {{-- Overlay when selected --}}
+                                    
                                     <div x-show="selectedAlbums.find(a => a.id === album.id)"
                                          class="absolute inset-0 bg-purple-500/40 flex items-center justify-center backdrop-blur-[2px]">
                                         <svg class="w-12 h-12 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 24 24">
@@ -343,7 +343,7 @@
                 </div>
             </div>
 
-            {{-- Right column: Selected Albums Sidebar --}}
+            
             <div class="w-full md:w-32 lg:w-40 flex-shrink-0">
                 <div x-show="selectedAlbums.length > 0" class="sticky top-6 flex flex-col items-center">
                     <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 text-center">Seleccionados</h3>
@@ -363,14 +363,14 @@
             </div>
         </div>
 
-        {{-- Interactive Circular Progress + Continue --}}
+        
         <div class="w-full max-w-4xl flex items-end justify-between mt-auto">
             <div class="text-gray-500 text-sm font-medium pt-8">
                 <span x-text="selectedAlbums.length" class="text-purple-600 font-bold"></span> / 5 seleccionados
             </div>
             
             <div class="relative flex flex-col items-center">
-                {{-- Circular SVG Progress --}}
+                
                 <svg class="w-28 h-14 overflow-hidden" viewBox="0 0 100 50">
                     <path class="text-gray-200" stroke-width="8" stroke="currentColor" fill="none" stroke-linecap="round" d="M 10,50 A 40,40 0 0,1 90,50" />
                     <path class="text-purple-600 transition-all duration-500 ease-out" stroke-width="8" stroke="currentColor" fill="none" stroke-linecap="round" 
@@ -396,7 +396,7 @@
         </div>
     </div>
 
-    {{-- ===== STEP 3: CANCIONES ===== --}}
+    
     <div x-show="step === 3"
          x-transition:enter="transition ease-out duration-500"
          x-transition:enter-start="opacity-0 translate-y-8"
@@ -417,7 +417,7 @@
             </div>
 
             <div class="flex flex-col items-end gap-4 w-full md:w-auto">
-                {{-- Search bar --}}
+                
                 <div class="relative w-full md:w-96">
                     <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
@@ -439,12 +439,12 @@
             </div>
         </div>
 
-        {{-- Main Layout: Left (Grids) and Right (Vertical Selected Items) --}}
+        
         <div class="flex flex-col md:flex-row gap-8 w-full">
             
-            {{-- Left column: Search Results & Suggestions --}}
+            
             <div class="flex-1 flex flex-col">
-                {{-- Track search results --}}
+                
                 <div x-show="trackResults.length > 0" class="order-1 mb-8">
                     <h3 class="font-bold text-gray-700 mb-4">Resultados de búsqueda</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -470,7 +470,7 @@
                     </div>
                 </div>
 
-                {{-- Recommended Tracks --}}
+                
                 <div x-show="recommendedTracksByGenre.length > 0" class="order-2 mb-8">
                     <h3 class="font-bold text-gray-700 mb-4">Sugerencias para ti</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -496,7 +496,7 @@
                 </div>
             </div>
 
-            {{-- Right column: Selected Tracks Sidebar --}}
+            
             <div class="w-full md:w-32 lg:w-40 flex-shrink-0">
                 <div x-show="selectedTracks.length > 0" class="sticky top-6 flex flex-col items-center">
                     <h3 class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-4 text-center">Seleccionadas</h3>
@@ -519,14 +519,14 @@
             </div>
         </div>
 
-        {{-- Interactive Circular Progress + Continue --}}
+        
         <div class="w-full max-w-4xl flex items-end justify-between mt-auto">
             <div class="text-gray-500 text-sm font-medium pt-8">
                 <span x-text="selectedTracks.length" class="text-purple-600 font-bold"></span> / 5 seleccionadas
             </div>
             
             <div class="relative flex flex-col items-center">
-                {{-- Circular SVG Progress --}}
+                
                 <svg class="w-28 h-14 overflow-hidden" viewBox="0 0 100 50">
                     <path class="text-gray-200" stroke-width="8" stroke="currentColor" fill="none" stroke-linecap="round" d="M 10,50 A 40,40 0 0,1 90,50" />
                     <path class="text-purple-600 transition-all duration-500 ease-out" stroke-width="8" stroke="currentColor" fill="none" stroke-linecap="round" 
@@ -555,14 +555,14 @@
         </div>
     </div>
 
-    {{-- ===== STEP 4: DASHBOARD ===== --}}
+    
     <div x-show="step === 4"
          x-transition:enter="transition ease-out duration-1000"
          x-transition:enter-start="opacity-0 translate-y-12"
          x-transition:enter-end="opacity-100 translate-y-0"
          style="display: none;">
 
-        {{-- Loading state --}}
+        
         <div x-show="isLoadingDashboard" class="max-w-4xl mx-auto px-6 py-20 text-center">
             <div class="inline-flex items-center gap-3 text-purple-500 text-lg">
                 <svg class="w-6 h-6 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -573,10 +573,10 @@
             </div>
         </div>
 
-        {{-- Dashboard content --}}
+        
         <div x-show="!isLoadingDashboard && dashboardData">
 
-            {{-- Hero --}}
+            
             <section class="relative overflow-hidden bg-white/40 shadow-sm border-b border-purple-100 rounded-b-3xl">
                 <div class="absolute inset-0 bg-gradient-to-br from-white via-purple-50 to-purple-100 animate-gradient opacity-90"></div>
                 <div class="absolute top-20 left-10 w-64 h-64 bg-purple-300/40 rounded-full blur-3xl animate-float"></div>
@@ -584,7 +584,7 @@
 
                 <div class="relative z-10 max-w-7xl mx-auto px-6 pt-12 pb-16">
                     <div class="flex flex-col lg:flex-row items-center gap-12">
-                        {{-- Left info --}}
+                        
                         <div class="flex-1 space-y-6">
                             <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-purple-200 shadow-sm text-xs font-medium text-purple-700">
                                 <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
@@ -601,7 +601,7 @@
                                     Reproducir Todo
                                 </button>
                             </div>
-                            {{-- Genre pills --}}
+                            
                             <div class="flex flex-wrap gap-2">
                                 <template x-for="genre in selectedGenres" :key="'pill-' + genre">
                                     <span class="px-3 py-1 text-xs font-medium rounded-full bg-purple-100 border border-purple-200 text-purple-800 capitalize shadow-sm" x-text="genre"></span>
@@ -609,7 +609,7 @@
                             </div>
                         </div>
 
-                        {{-- Right: Playlist preview --}}
+                        
                         <div class="flex-1 w-full max-w-lg">
                             <div class="bg-white/80 backdrop-blur-xl rounded-3xl p-6 border border-purple-100 shadow-xl space-y-2">
                                 <template x-for="(track, index) in (dashboardData?.weekly_playlist || []).slice(0, 8)" :key="'pl-' + track.id">
@@ -656,7 +656,7 @@
                 </div>
             </section>
 
-            {{-- Albums Section --}}
+            
             <section class="max-w-7xl mx-auto px-6 py-16">
                 <div class="flex items-center justify-between mb-8">
                     <div>
@@ -689,7 +689,7 @@
                 </div>
             </section>
 
-            {{-- Singles Section --}}
+            
             <section class="max-w-7xl mx-auto px-6 py-8">
                 <div class="flex items-center justify-between mb-8">
                     <div>
@@ -721,7 +721,7 @@
         </div>
     </div>
 
-    {{-- ===== FLOATING PLAYER ===== --}}
+    
     <div x-show="currentTrack" x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="translate-y-full opacity-0"
          x-transition:enter-end="translate-y-0 opacity-100"
@@ -884,7 +884,7 @@ function onboardingFlow() {
         // --- Genres ---
         async loadGenres() {
             try {
-                const res = await fetch('{{ url("discovery/genres") }}');
+                const res = await fetch('<?php echo e(url("discovery/genres")); ?>');
                 const all = await res.json();
                 this.genres = all;
                 // Shuffle to get a nice initial 25 matrix
@@ -924,7 +924,7 @@ function onboardingFlow() {
             }
             this.isSearchingAlbums = true;
             try {
-                const res = await fetch(`{{ url('discovery/search') }}?q=${encodeURIComponent(this.albumQuery)}&type=album`);
+                const res = await fetch(`<?php echo e(url('discovery/search')); ?>?q=${encodeURIComponent(this.albumQuery)}&type=album`);
                 this.albumResults = await res.json();
             } catch (e) {
                 console.error('Album search failed:', e);
@@ -949,7 +949,7 @@ function onboardingFlow() {
             }
             this.isSearchingTracks = true;
             try {
-                const res = await fetch(`{{ url('discovery/search') }}?q=${encodeURIComponent(this.trackQuery)}&type=track`);
+                const res = await fetch(`<?php echo e(url('discovery/search')); ?>?q=${encodeURIComponent(this.trackQuery)}&type=track`);
                 this.trackResults = await res.json();
             } catch (e) {
                 console.error('Track search failed:', e);
@@ -1024,7 +1024,7 @@ function onboardingFlow() {
                 // we'll fetch from the existing endpoint by passing empty album/track arrays,
                 // and extract the recommended items.
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                const res = await fetch('{{ url("discovery/generate") }}', {
+                const res = await fetch('<?php echo e(url("discovery/generate")); ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1062,7 +1062,7 @@ function onboardingFlow() {
             this.isFetchingTrackRecommendations = true;
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                const res = await fetch('{{ url("discovery/generate") }}', {
+                const res = await fetch('<?php echo e(url("discovery/generate")); ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1091,7 +1091,7 @@ function onboardingFlow() {
             this.isLoadingDashboard = true;
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-                const res = await fetch('{{ url("discovery/generate") }}', {
+                const res = await fetch('<?php echo e(url("discovery/generate")); ?>', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1179,4 +1179,6 @@ function onboardingFlow() {
     };
 }
 </script>
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.discovery', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\RecicledApp\resources\views/discovery/onboarding.blade.php ENDPATH**/ ?>
