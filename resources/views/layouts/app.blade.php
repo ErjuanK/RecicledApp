@@ -38,6 +38,9 @@
                 <img src="{{ asset('multimedia/img/logo_White.png') }}" alt="Project Icon" style="height: 80px; width: 80px; object-fit: contain;">
             </a>
         </div>
+        <button class="btn-hamburguesa" id="btn-hamburguesa" aria-label="Menú">
+            <i class="fa-solid fa-bars"></i>
+        </button>
         <div class="inicio-sesion">
             @auth
                 <style>
@@ -202,6 +205,28 @@
     <script src="{{ asset('js/script.js') }}?v=4"></script>
     <script src="{{ asset('js/busqueda.js') }}?v=4"></script>
     <script src="{{ asset('js/busqueda-artista.js') }}?v=4"></script>
+
+    {{-- Toggle menú móvil --}}
+    <script>
+        (function() {
+            const btnHamburguesa = document.getElementById('btn-hamburguesa');
+            const navMovil = document.querySelector('.navegacion');
+            if (btnHamburguesa && navMovil) {
+                btnHamburguesa.addEventListener('click', function() {
+                    navMovil.classList.toggle('activa');
+                    // Cambiar icono entre hamburguesa y X
+                    const icono = btnHamburguesa.querySelector('i');
+                    if (navMovil.classList.contains('activa')) {
+                        icono.classList.remove('fa-bars');
+                        icono.classList.add('fa-xmark');
+                    } else {
+                        icono.classList.remove('fa-xmark');
+                        icono.classList.add('fa-bars');
+                    }
+                });
+            }
+        })();
+    </script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {

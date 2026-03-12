@@ -359,6 +359,9 @@ body {
         grid-template-columns: 1fr;
         text-align: center;
         padding-top: 60px;
+        padding-left: 20px;
+        padding-right: 20px;
+        gap: 30px;
     }
 
     .barra-lateral-artista {
@@ -378,5 +381,61 @@ body {
 
     .cuadricula-canciones {
         grid-template-columns: 1fr;
+    }
+
+    .cuadricula-albumes-creativa {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .contenedor-hero-artista {
+        height: 280px;
+        margin-bottom: -60px;
+    }
+
+    .imagen-hero {
+        background-attachment: scroll;
+        /* Fixed no funciona en iOS mobile */
+    }
+
+    .contenedor-imagen-perfil {
+        width: 150px;
+        height: 150px;
+    }
+
+    .nombre-artista {
+        font-size: 2rem;
+    }
+
+    .generos-artista {
+        justify-content: center;
+    }
+
+    .contenedor-busqueda-completo {
+        padding: 10px 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contenedor-principal-artista {
+        padding: 40px 15px 40px;
+    }
+
+    .cuadricula-albumes-creativa {
+        grid-template-columns: 1fr;
+    }
+
+    .contenedor-hero-artista {
+        height: 200px;
+        margin-bottom: -40px;
+    }
+
+    .nombre-artista {
+        font-size: 1.6rem;
+    }
+
+    .contenedor-imagen-perfil {
+        width: 120px;
+        height: 120px;
     }
 }

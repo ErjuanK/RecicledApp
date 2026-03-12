@@ -375,3 +375,315 @@ footer {
 .pie .redes-sociales a:hover {
     color: #ccc;
 }
+
+/* ========================================
+   RESPONSIVE — Tablet (≤1024px)
+   ======================================== */
+@media (max-width: 1024px) {
+    header {
+        height: auto;
+        min-height: 10vh;
+        padding: 10px 3%;
+    }
+
+    .buscador {
+        width: 280px;
+    }
+
+    header .img img {
+        width: 60px;
+    }
+
+    .superior {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .info-artista {
+        padding-top: 5%;
+        text-align: center;
+        align-items: center;
+    }
+
+    .info-artista h3 {
+        width: 100%;
+    }
+
+    .info-contexto {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .novedades {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .contenedor-carrusel {
+        width: 95%;
+    }
+
+    .elemento-carrusel {
+        width: 22vw;
+    }
+
+    .elemento-carrusel.left {
+        transform: translateX(-18vw) scale(0.8);
+    }
+
+    .elemento-carrusel.right {
+        transform: translateX(18vw) scale(0.8);
+    }
+
+    .cuadricula-pie {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+    }
+}
+
+/* ========================================
+   RESPONSIVE — Móvil (≤768px)
+   ======================================== */
+@media (max-width: 768px) {
+    header {
+        flex-wrap: wrap;
+        height: auto;
+        padding: 10px 4%;
+        gap: 8px;
+        position: relative;
+    }
+
+    .header-left {
+        order: 2;
+        flex: 1 1 100%;
+    }
+
+    .buscador {
+        width: 100%;
+    }
+
+    #campo-busqueda {
+        height: 40px;
+    }
+
+    header .img {
+        order: 1;
+        flex: 0 0 auto;
+    }
+
+    header .img img {
+        width: 50px;
+    }
+
+    .inicio-sesion {
+        order: 3;
+        flex: 0 0 auto;
+    }
+
+    .inicio-sesion a {
+        font-size: 0.9em;
+        margin: 0 5px;
+    }
+
+    .nombre-usuario-header {
+        display: none;
+    }
+
+    /* Botón hamburguesa — visible en mobile */
+    .btn-hamburguesa {
+        display: flex !important;
+        order: 4;
+    }
+
+    /* Navegación — colapsa en vertical */
+    .navegacion {
+        display: none;
+        flex-direction: column;
+        padding: 0;
+    }
+
+    .navegacion.activa {
+        display: flex;
+    }
+
+    .navegacion a {
+        margin: 0;
+        padding: 12px 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        font-size: 1em;
+        text-align: center;
+    }
+
+    .navegacion a:last-child {
+        border-bottom: none;
+    }
+
+    /* Main content */
+    main {
+        padding: 5% 4%;
+    }
+
+    .superior {
+        grid-template-columns: 1fr;
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .info-artista {
+        padding-top: 0;
+        text-align: center;
+        align-items: center;
+    }
+
+    .info-artista h3 {
+        font-size: 1.4em;
+        width: 100%;
+    }
+
+    p.info-contexto {
+        font-size: 1em;
+    }
+
+    /* Carousel */
+    .contenedor-carrusel {
+        width: 100%;
+        height: 200px;
+    }
+
+    .carrusel {
+        height: 200px;
+    }
+
+    .elemento-carrusel {
+        width: 35vw;
+    }
+
+    .elemento-carrusel.center {
+        transform: translateX(0) scale(1.2);
+    }
+
+    .elemento-carrusel.left {
+        transform: translateX(-28vw) scale(0.7);
+        opacity: 0.4;
+    }
+
+    .elemento-carrusel.right {
+        transform: translateX(28vw) scale(0.7);
+        opacity: 0.6;
+    }
+
+    /* Sección Mid — Popular */
+    .mid .encabezado-popular {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .mid .popular {
+        font-size: 1.3em;
+    }
+
+    .mid .filtro select {
+        padding: 6px 10px;
+        font-size: 0.9em;
+    }
+
+    /* Song Grid — stacked layout */
+    .cuadricula-canciones .elementos {
+        grid-template-columns: auto auto 1fr auto;
+        gap: 8px;
+        padding: 8px;
+    }
+
+    .cuadricula-canciones .elementos .artista {
+        display: none;
+    }
+
+    .cuadricula-canciones .elementos .numero-cancion {
+        font-size: 1.2em;
+        margin-right: 8px;
+    }
+
+    .cuadricula-canciones .elementos img {
+        width: 40px;
+        height: 40px;
+        margin-right: 8px;
+    }
+
+    .cuadricula-canciones .elementos .titulo-cancion {
+        font-size: 0.9em;
+    }
+
+    /* Footer */
+    footer {
+        padding: 30px 20px;
+    }
+
+    .cuadricula-pie {
+        grid-template-columns: 1fr;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .pie {
+        align-items: center;
+    }
+
+    .p1 .imagen-pie img {
+        height: 10vh;
+    }
+
+    .pie .redes-sociales {
+        justify-content: center;
+    }
+}
+
+/* ========================================
+   RESPONSIVE — Móvil pequeño (≤480px)
+   ======================================== */
+@media (max-width: 480px) {
+    header .img img {
+        width: 40px;
+    }
+
+    .inicio-sesion a {
+        font-size: 0.8em;
+    }
+
+    .elemento-carrusel {
+        width: 40vw;
+    }
+
+    .cuadricula-canciones .elementos {
+        grid-template-columns: auto 1fr auto;
+    }
+
+    .cuadricula-canciones .elementos img {
+        display: none;
+    }
+
+    .novedades .titulo-novedades {
+        font-size: 1.3em;
+    }
+}
+
+/* ========================================
+   Botón hamburguesa — Oculto por defecto
+   ======================================== */
+.btn-hamburguesa {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    color: white;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 5px;
+    transition: transform 0.2s;
+}
+
+.btn-hamburguesa:hover {
+    transform: scale(1.1);
+}

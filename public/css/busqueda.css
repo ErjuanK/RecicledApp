@@ -102,3 +102,24 @@
 #resultados-busqueda::-webkit-scrollbar-thumb:hover {
     background: linear-gradient(180deg, #2E0249 0%, #511281 100%);
 }
+
+/* Responsive — Móvil */
+@media (max-width: 768px) {
+    #resultados-busqueda {
+        max-height: 300px;
+    }
+
+    .resultado-item {
+        padding: 10px 12px;
+    }
+
+    .resultado-imagen {
+        width: 40px;
+        height: 40px;
+        margin-right: 10px;
+    }
+
+    .resultado-nombre {
+        font-size: 0.85rem;
+    }
+}
