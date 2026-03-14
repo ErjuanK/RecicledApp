@@ -38,9 +38,6 @@
                 <img src="{{ asset('multimedia/img/logo_White.png') }}" alt="Project Icon" style="height: 80px; width: 80px; object-fit: contain;">
             </a>
         </div>
-        <button class="btn-hamburguesa" id="btn-hamburguesa" aria-label="Menú">
-            <i class="fa-solid fa-bars"></i>
-        </button>
         <div class="inicio-sesion">
             @auth
                 <style>
@@ -145,6 +142,9 @@
                 <a href="{{ route('register') }}">Registrarse</a>
             @endauth
         </div>
+        <button class="btn-hamburguesa" id="btn-hamburguesa" aria-label="Menú">
+            <i class="fa-solid fa-bars"></i>
+        </button>
         
     </header>
     <div class="navegacion">

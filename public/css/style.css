@@ -447,16 +447,18 @@ footer {
    ======================================== */
 @media (max-width: 768px) {
     header {
-        flex-wrap: wrap;
+        display: flex;
         height: auto;
         padding: 10px 4%;
-        gap: 8px;
+        gap: 10px;
         position: relative;
+        align-items: center;
+        flex-wrap: nowrap;
     }
 
     .header-left {
-        order: 3;
-        flex: 1 1 100%;
+        flex: 1 1 auto;
+        min-width: 150px;
     }
 
     .buscador {
@@ -468,11 +470,7 @@ footer {
     }
 
     header .img {
-        order: 2;
-        flex: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        flex: 0 0 auto;
     }
 
     header .img img {
@@ -480,13 +478,14 @@ footer {
     }
 
     .inicio-sesion {
-        order: 1;
         flex: 0 0 auto;
-        gap: 10px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
     }
 
     .inicio-sesion a {
-        font-size: 0.9em;
+        font-size: 0.85em;
         margin: 0;
         padding: 8px 10px;
         white-space: nowrap;
@@ -499,8 +498,8 @@ footer {
     /* Botón hamburguesa — visible en mobile */
     .btn-hamburguesa {
         display: flex !important;
-        order: 4;
-        margin-left: auto;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Navegación — colapsa en vertical */
