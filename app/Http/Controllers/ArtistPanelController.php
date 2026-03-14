@@ -43,8 +43,8 @@ class ArtistPanelController extends Controller
         // Load albums and songs
         $albumes = $artista->albums()->with('canciones')->get();
         
-        // Load ALL songs for this artist (including standalone ones without album)
-        $canciones = Cancion::where('artista_id', $artista->artista_id)
+        // Load ALL songs for this artist using Eloquent Relationships
+        $canciones = $artista->canciones()
             ->with('album')
             ->get()
             ->map(function ($cancion) {
