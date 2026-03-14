@@ -50,6 +50,7 @@ class Artista extends Model
      */
     public function canciones()
     {
-        return $this->hasMany(Cancion::class, 'artista_id', 'artista_id');
+        
+        return $this->belongsToMany(Cancion::class, 'artista_cancion', 'artista_id', 'cancion_id');
     }
 }
