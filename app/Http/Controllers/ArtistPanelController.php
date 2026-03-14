@@ -68,7 +68,7 @@ class ArtistPanelController extends Controller
             'nombre_artistico' => 'required|string|max:255|unique:artista,nombre_artistico,' . $artista->artista_id . ',artista_id',
             'biografia' => 'nullable|string',
             
-            'email' => 'required|email|max:255|unique:usuario,email,' . $user->usuario_id . ',usuario_id',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'nombre_real' => 'nullable|string|max:100',
             'apellidos' => 'nullable|string|max:100',
             'pais' => 'nullable|string|max:100',
@@ -86,7 +86,7 @@ class ArtistPanelController extends Controller
             $userData = $request->only(['email', 'nombre_real', 'apellidos', 'pais', 'ciudad', 'codigo_postal']);
             
             if ($request->filled('password')) {
-                $userData['contrasena'] = \Illuminate\Support\Facades\Hash::make($request->password);
+                $userData['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
             }
 
             if ($request->hasFile('avatar')) {
@@ -95,7 +95,7 @@ class ArtistPanelController extends Controller
                 $userData['avatar'] = 'multimedia/img/avatars/' . $filename;
             }
 
-            User::where('usuario_id', $user->usuario_id)->update($userData);
+            User::where('id', $user->id)->update($userData);
 
             // 2. Update Artist Data
             $artista->nombre_artistico = $request->nombre_artistico;
