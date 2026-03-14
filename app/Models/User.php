@@ -13,7 +13,7 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     // Configuración Legacy
-    protected $table = 'usuario';
+    protected $table = 'users';
     protected $primaryKey = 'usuario_id';
     public $timestamps = false; // La tabla tiene fecha_registro pero no updated_at
 
