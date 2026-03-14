@@ -89,7 +89,7 @@ class AuthController extends Controller
     {
         $request->validate([
             'nombre_artistico' => ['required', 'string', 'max:255', 'unique:artista'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:usuario'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'confirmed', 'min:4'],
             'genero_musical' => ['required', 'string'],
         ]);
@@ -99,10 +99,10 @@ class AuthController extends Controller
 
             // 1. Create User (Role 'editor')
             $user = User::create([
-                'nombre_usuario' => $request->nombre_artistico, // Use artist name as username
+                'name' => $request->nombre_artistico, // Use artist name as username
                 'email' => $request->email,
-                'contrasena' => \Illuminate\Support\Facades\Hash::make($request->password),
-                'rol' => 'editor',
+                'password' => Hash::make($request->password),
+                'rol' => 'artista',
             ]);
 
             // 2. Create Artist
