@@ -458,11 +458,15 @@ footer {
 
     .header-left {
         flex: 1 1 auto;
-        min-width: 150px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
     }
 
     .buscador {
-        width: 100%;
+        flex: 1 1 auto;
+        min-width: 120px;
     }
 
     #campo-busqueda {
@@ -506,10 +510,10 @@ footer {
     .navegacion {
         display: none;
         flex-direction: column;
-        padding: 15px 0;
+        padding: 0;
         width: 100%;
         background-color: #2E0249;
-        align-items: center;
+        align-items: stretch;
         gap: 0;
     }
 
@@ -517,16 +521,25 @@ footer {
         display: flex;
     }
 
-    .navegacion a {
+    .navegacion nav {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        align-items: center;
+    }
+
+    .navegacion nav a {
         margin: 0;
         padding: 15px 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         font-size: 1em;
         text-align: center;
         width: 100%;
+        color: white;
+        text-decoration: none;
     }
 
-    .navegacion a:last-child {
+    .navegacion nav a:last-child {
         border-bottom: none;
     }
 

@@ -32,88 +32,86 @@
                 <input type="text" id="campo-busqueda" placeholder="Buscar artistas o canciones...">
                 <div id="resultados-busqueda" class="oculto"></div>
             </div>
+            <div class="img">
+                <a href="<?php echo e(url('/')); ?>" style="display:flex; align-items:center; text-decoration:none; gap: 10px;">
+                    <img src="<?php echo e(asset('multimedia/img/logo_White.png')); ?>" alt="Project Icon" style="height: 80px; width: 80px; object-fit: contain;">
+                </a>
+            </div>
         </div>
-        <div class="img">
-            <a href="<?php echo e(url('/')); ?>" style="display:flex; align-items:center; text-decoration:none; gap: 10px;">
-                <img src="<?php echo e(asset('multimedia/img/logo_White.png')); ?>" alt="Project Icon" style="height: 80px; width: 80px; object-fit: contain;">
-            </a>
-        </div>
-        <button class="btn-hamburguesa" id="btn-hamburguesa" aria-label="Menú">
-            <i class="fa-solid fa-bars"></i>
-        </button>
         <div class="inicio-sesion">
-            <?php if(auth()->guard()->check()): ?>
-                <style>
-                    /* Estilos para el Dropdown de Usuario - Portado a Blade */
-                    .usuario-dropdown-contenedor {
-                        position: relative;
-                        display: flex;
-                        align-items: center;
-                        gap: 10px;
-                        cursor: pointer;
-                        padding: 5px 10px;
-                        border-radius: 20px;
-                        transition: background-color 0.2s;
-                    }
-                    .usuario-dropdown-contenedor:hover {
-                        background-color: rgba(255, 255, 255, 0.1);
-                    }
-                    .avatar-mini {
-                        width: 35px;
-                        height: 35px;
-                        border-radius: 50%;
-                        object-fit: cover;
-                        border: 2px solid white;
-                    }
-                    .nombre-usuario-header {
-                        color: white;
-                        font-weight: 600;
-                        font-size: 0.95em;
-                    }
-                    .menu-desplegable {
-                        display: none;
-                        position: absolute;
-                        top: 100%;
-                        right: 0;
-                        background-color: white;
-                        min-width: 180px;
-                        box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-                        border-radius: 8px;
-                        z-index: 1000;
-                        overflow: hidden;
-                        margin-top: 10px;
-                    }
-                    /* Puente invisible */
-                    .usuario-dropdown-contenedor::after {
-                        content: '';
-                        position: absolute;
-                        top: 100%;
-                        left: 0;
-                        width: 100%;
-                        height: 10px; 
-                    }
-                    .usuario-dropdown-contenedor:hover .menu-desplegable {
-                        display: block;
-                    }
-                    .menu-desplegable a {
-                        color: #333;
-                        padding: 12px 16px;
-                        text-decoration: none;
-                        display: block;
-                        font-size: 0.9em;
-                        transition: background-color 0.2s;
-                    }
-                    .menu-desplegable a:hover {
-                        background-color: #f1f1f1;
-                        color: #6F00D0;
-                    }
-                    .menu-desplegable a i {
-                        margin-right: 8px;
-                        width: 20px;
-                        text-align: center;
-                    }
-                </style>
-                <div class="usuario-dropdown-contenedor">
+            <style>
+                /* Estilos para el Dropdown de Usuario - Portado a Blade */
+                .usuario-dropdown-contenedor {
+                    position: relative;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                    cursor: pointer;
+                    padding: 5px 10px;
+                    border-radius: 20px;
+                    transition: background-color 0.2s;
+                }
+                .usuario-dropdown-contenedor:hover {
+                    background-color: rgba(255, 255, 255, 0.1);
+                }
+                .avatar-mini {
+                    width: 35px;
+                    height: 35px;
+                    border-radius: 50%;
+                    object-fit: cover;
+                    border: 2px solid white;
+                }
+                .nombre-usuario-header {
+                    color: white;
+                    font-weight: 600;
+                    font-size: 0.95em;
+                }
+                .menu-desplegable {
+                    display: none;
+                    position: absolute;
+                    top: 100%;
+                    right: 0;
+                    background-color: white;
+                    min-width: 180px;
+                    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+                    border-radius: 8px;
+                    z-index: 1000;
+                    overflow: hidden;
+                    margin-top: 10px;
+                }
+                /* Puente invisible */
+                .usuario-dropdown-contenedor::after {
+                    content: '';
+                    position: absolute;
+                    top: 100%;
+                    left: 0;
+                    width: 100%;
+                    height: 10px; 
+                }
+                .usuario-dropdown-contenedor:hover .menu-desplegable {
+                    display: block;
+                }
+                .menu-desplegable a {
+                    color: #333;
+                    padding: 12px 16px;
+                    text-decoration: none;
+                    display: block;
+                    font-size: 0.9em;
+                    transition: background-color 0.2s;
+                }
+                .menu-desplegable a:hover {
+                    background-color: #f1f1f1;
+                    color: #6F00D0;
+                }
+                .menu-desplegable a i {
+                    margin-right: 8px;
+                    width: 20px;
+                    text-align: center;
+                }
+            </style>
+            
+            <div class="usuario-dropdown-contenedor">
+                <?php if(auth()->guard()->check()): ?>
                     <?php if(Auth::user()->avatar): ?>
                         <img src="<?php echo e(asset(Auth::user()->avatar)); ?>" 
                              alt="User" 
@@ -126,9 +124,12 @@
                     
                     <span class="nombre-usuario-header"><?php echo e(Auth::user()->name); ?></span>
                     <i class="fa-solid fa-chevron-down" style="color: white; font-size: 0.8em;"></i>
+                <?php else: ?>
+                    <i class="fa-solid fa-user" style="color: white; font-size: 1.5em;"></i>
+                <?php endif; ?>
 
-                    <div class="menu-desplegable">
-                        <!-- Smart Link: Goes to Artist Panel or User Profile based on logic -->
+                <div class="menu-desplegable">
+                    <?php if(auth()->guard()->check()): ?>
                         <a href="<?php echo e(route('profile')); ?>">
                             <i class="fa-solid fa-user"></i> Mi Perfil
                         </a>
@@ -138,13 +139,20 @@
                                 <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
                             </a>
                         </form>
-                    </div>
+                    <?php else: ?>
+                        <a href="<?php echo e(route('login')); ?>">
+                            <i class="fa-solid fa-right-to-bracket"></i> Inicia Sesión
+                        </a>
+                        <a href="<?php echo e(route('register')); ?>">
+                            <i class="fa-solid fa-user-plus"></i> Registrarse
+                        </a>
+                    <?php endif; ?>
                 </div>
-            <?php else: ?>
-                <a href="<?php echo e(route('login')); ?>">Inicia Sesión</a>
-                <a href="<?php echo e(route('register')); ?>">Registrarse</a>
-            <?php endif; ?>
+            </div>
         </div>
+        <button class="btn-hamburguesa" id="btn-hamburguesa" aria-label="Menú">
+            <i class="fa-solid fa-bars"></i>
+        </button>
         
     </header>
     <div class="navegacion">
