@@ -455,7 +455,7 @@ footer {
     }
 
     .header-left {
-        order: 2;
+        order: 3;
         flex: 1 1 100%;
     }
 
@@ -468,8 +468,11 @@ footer {
     }
 
     header .img {
-        order: 1;
-        flex: 0 0 auto;
+        order: 2;
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     header .img img {
@@ -477,13 +480,16 @@ footer {
     }
 
     .inicio-sesion {
-        order: 3;
+        order: 1;
         flex: 0 0 auto;
+        gap: 10px;
     }
 
     .inicio-sesion a {
         font-size: 0.9em;
-        margin: 0 5px;
+        margin: 0;
+        padding: 8px 10px;
+        white-space: nowrap;
     }
 
     .nombre-usuario-header {
@@ -494,13 +500,18 @@ footer {
     .btn-hamburguesa {
         display: flex !important;
         order: 4;
+        margin-left: auto;
     }
 
     /* Navegación — colapsa en vertical */
     .navegacion {
         display: none;
         flex-direction: column;
-        padding: 0;
+        padding: 15px 0;
+        width: 100%;
+        background-color: #2E0249;
+        align-items: center;
+        gap: 0;
     }
 
     .navegacion.activa {
@@ -509,10 +520,11 @@ footer {
 
     .navegacion a {
         margin: 0;
-        padding: 12px 20px;
+        padding: 15px 20px;
         border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         font-size: 1em;
         text-align: center;
+        width: 100%;
     }
 
     .navegacion a:last-child {
@@ -648,7 +660,8 @@ footer {
     }
 
     .inicio-sesion a {
-        font-size: 0.8em;
+        font-size: 0.75em;
+        padding: 6px 8px;
     }
 
     .elemento-carrusel {
