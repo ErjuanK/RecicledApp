@@ -59,11 +59,11 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="text-sm text-gray-500">{{ $usuario->fecha_registro ? $usuario->fecha_registro->format('d/m/Y') : '-' }}</span>
+                            <span class="text-sm text-gray-500">{{ $usuario->created_at ? $usuario->created_at->format('d/m/Y') : '-' }}</span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             @if($usuario->rol !== 'admin')
-                            <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario->usuario_id) }}"
+                            <form method="POST" action="{{ route('admin.usuarios.destroy', $usuario->id) }}"
                                   onsubmit="return confirm('¿Estás seguro de que quieres eliminar este usuario?')">
                                 @csrf
                                 @method('DELETE')
