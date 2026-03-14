@@ -12,7 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('cancion', function (Blueprint $table) {
+            $table->dropForeign(['album_id']);
             $table->unsignedBigInteger('album_id')->nullable()->change();
+            $table->foreign('album_id')->references('album_id')->on('album')->onDelete('cascade');
         });
     }
 
@@ -22,7 +24,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('cancion', function (Blueprint $table) {
+            $table->dropForeign(['album_id']);
             $table->unsignedBigInteger('album_id')->nullable(false)->change();
+            $table->foreign('album_id')->references('album_id')->on('album')->onDelete('cascade');
         });
     }
 };

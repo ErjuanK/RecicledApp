@@ -14,8 +14,8 @@ class User extends Authenticatable
 
     // Configuración Legacy
     protected $table = 'users';
-    protected $primaryKey = 'usuario_id';
-    public $timestamps = false; // La tabla tiene fecha_registro pero no updated_at
+    protected $primaryKey = 'id';
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -23,17 +23,10 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        'nombre_usuario',
+        'name',
         'email',
-        'contrasena',
+        'password',
         'rol',
-        'avatar',
-        'nombre_real',
-        'apellidos',
-        'calle',
-        'codigo_postal',
-        'ciudad',
-        'pais'
     ];
 
     /**
@@ -42,7 +35,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $hidden = [
-        'contrasena',
+        'password',
         'remember_token',
     ];
 
@@ -53,7 +46,7 @@ class User extends Authenticatable
      */
     public function getAuthPassword()
     {
-        return $this->contrasena;
+        return $this->password;
     }
 
     /**
