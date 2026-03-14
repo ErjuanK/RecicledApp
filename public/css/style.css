@@ -19,31 +19,29 @@ body {
 }
 
 header {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: 1fr auto 0.9fr;
     align-items: center;
     background-color: #511281;
     color: whitesmoke;
-    padding: 0px 2%;
-    height: 12vh;
+    padding: 10px 2%;
+    height: auto;
+    min-height: 70px;
 }
 
 .header-left {
-    flex: 0 1 350px;
     display: flex;
     justify-content: flex-start;
     align-items: center;
 }
 
 .header-center {
-    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;
 }
 
 .header-right {
-    flex: 0 1 auto;
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -90,7 +88,9 @@ header .img {
 }
 
 header .img img {
-    width: 6vw;
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
 }
 
 @media (max-width: 768px) {
