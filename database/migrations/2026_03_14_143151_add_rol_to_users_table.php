@@ -10,20 +10,24 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            // Añadimos la columna rol, por defecto será 'usuario'
-            $table->string('rol')->default('usuario')->after('password');
-        });
-    }
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->string('nombre_real', 100)->nullable();
+        $table->string('apellidos', 100)->nullable();
+        $table->string('calle', 255)->nullable();
+        $table->string('codigo_postal', 20)->nullable();
+        $table->string('ciudad', 100)->nullable();
+        $table->string('pais', 100)->nullable();
+        $table->string('avatar')->nullable();
+    });
+}
 
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('rol');
-        });
-    }
+public function down(): void
+{
+    Schema::table('users', function (Blueprint $table) {
+        $table->dropColumn([
+            'nombre_real', 'apellidos', 'calle', 'codigo_postal', 'ciudad', 'pais', 'avatar'
+        ]);
+    });
+}
 };
