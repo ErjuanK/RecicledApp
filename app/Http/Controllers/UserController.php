@@ -26,7 +26,7 @@ class UserController extends Controller
         $user = Auth::user();
 
         $request->validate([
-            'email' => 'required|email|max:255|unique:usuario,email,' . $user->usuario_id . ',usuario_id',
+            'email' => 'required|email|max:255|unique:users,email,' . $user->id,
             'nombre_real' => 'nullable|string|max:100',
             'apellidos' => 'nullable|string|max:100',
             'calle' => 'nullable|string|max:255',
@@ -45,7 +45,7 @@ class UserController extends Controller
             // Handle Avatar Upload
             if ($request->hasFile('avatar')) {
                 // Generate filename like user_123_163123123.jpg
-                $filename = 'user_' . $user->usuario_id . '_' . time() . '.' . $request->avatar->getClientOriginalExtension();
+                $filename = 'user_' . $user->id . '_' . time() . '.' . $request->avatar->getClientOriginalExtension();
                 
                 // Store in public/multimedia/img/avatars
                 $request->avatar->move(public_path('multimedia/img/avatars'), $filename);
@@ -56,12 +56,12 @@ class UserController extends Controller
 
             // Handle Password Update
             if ($request->filled('password')) {
-                $data['contrasena'] = \Illuminate\Support\Facades\Hash::make($request->password);
+                $data['password'] = \Illuminate\Support\Facades\Hash::make($request->password);
             }
 
             // Update User (Using legacy Table update)
             // Note: Since we are using Eloquent, update() works directly if fillable is set correctly
-            User::where('usuario_id', $user->usuario_id)->update($data);
+            User::where('id', $user->id)->update($data);
 
             return back()->with('success', 'Perfil actualizado correctamente.');
 
@@ -77,7 +77,7 @@ class UserController extends Controller
     public function show($username)
     {
         // Buscar usuario por nombre_usuario
-        $user = User::where('nombre_usuario', $username)->firstOrFail();
+        $user = User::where('name', $username)->firstOrFail();
         
         // Cargar anotaciones si existieran (relación pendiente)
         // $anotaciones = $user->anotaciones()->with('letra.cancion.artista')->get();
