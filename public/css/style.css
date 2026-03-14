@@ -29,9 +29,23 @@ header {
 }
 
 .header-left {
-    flex: 1;
+    flex: 0 1 350px;
     display: flex;
     justify-content: flex-start;
+    align-items: center;
+}
+
+.header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.header-right {
+    flex: 0 1 auto;
+    display: flex;
+    justify-content: flex-end;
     align-items: center;
 }
 
@@ -40,7 +54,6 @@ header {
     display: flex;
     align-items: center;
     width: 350px;
-    /* Ancho controlado para que sea responsive */
     max-width: 100%;
 }
 
@@ -80,23 +93,10 @@ header .img img {
     width: 6vw;
 }
 
-.inicio-sesion {
-    flex: 1;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-}
-
-.inicio-sesion a {
-    color: white;
-    margin: 0 10px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 1.1em;
-}
-
-.inicio-sesion a:hover {
-    text-decoration: underline;
+@media (max-width: 768px) {
+    header .img img {
+        width: auto;
+    }
 }
 
 .navegacion {
@@ -464,6 +464,23 @@ footer {
         min-width: 0;
     }
 
+    .header-center {
+        flex: 0 1 auto;
+        padding: 5px;
+    }
+
+    .header-center img {
+        height: 50px;
+        width: 50px;
+    }
+
+    .header-right {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
     .buscador {
         flex: 1 1 auto;
         min-width: 120px;
@@ -481,14 +498,7 @@ footer {
         width: 50px;
     }
 
-    .inicio-sesion {
-        flex: 0 0 auto;
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .inicio-sesion a {
+    .header-right a {
         font-size: 0.85em;
         margin: 0;
         padding: 8px 10px;
@@ -671,7 +681,7 @@ footer {
         width: 40px;
     }
 
-    .inicio-sesion a {
+    .header-right a {
         font-size: 0.75em;
         padding: 6px 8px;
     }

@@ -32,13 +32,15 @@
                 <input type="text" id="campo-busqueda" placeholder="Buscar artistas o canciones...">
                 <div id="resultados-busqueda" class="oculto"></div>
             </div>
+        </div>
+        <div class="header-center">
             <div class="img">
                 <a href="{{ url('/') }}" style="display:flex; align-items:center; text-decoration:none; gap: 10px;">
                     <img src="{{ asset('multimedia/img/logo_White.png') }}" alt="Project Icon" style="height: 80px; width: 80px; object-fit: contain;">
                 </a>
             </div>
         </div>
-        <div class="inicio-sesion">
+        <div class="header-right">
             <style>
                 /* Estilos para el Dropdown de Usuario - Portado a Blade */
                 .usuario-dropdown-contenedor {
