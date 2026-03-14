@@ -2,6 +2,16 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/styleLogin.css') }}?v=1.3">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=lock" />
+    <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+      'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+    </style>
 @endpush
 
 @section('content')
@@ -23,7 +33,7 @@
 
             <label for="password">Contraseña</label>
             <div class="grupo-entrada">
-                <i class="fa-solid fa-lock icono-izquierda"></i>
+                <span class="material-symbols-outlined icono-izquierda">lock</span>
                 <div class="contenedor-input-icono">
                     <input type="password" id="password" name="password" placeholder="Introduce tu contraseña" required>
                     <i class="fa-solid fa-eye alternar-contrasena icono-derecha"></i>
