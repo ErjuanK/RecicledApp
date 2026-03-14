@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
 class AuthController extends Controller
@@ -56,15 +57,15 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'nombre_usuario' => ['required', 'string', 'max:255', 'unique:users'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', 'min:4'], // confirmed busca password_confirmation
+            'nombre_usuario' => 'required|unique:users,name',
+            'email' => 'required|string|email|max:255|unique:users,email',
+            'password' => 'required|confirmed|min:4', // confirmed busca password_confirmation
         ]);
 
         $user = User::create([
-            'nombre_usuario' => $request->nombre_usuario,
+            'name' => $request->nombre_usuario,
             'email' => $request->email,
-            'contrasena' => \Illuminate\Support\Facades\Hash::make($request->password), // Hash manual si el mutator no funciona
+            'password' => Hash::make($request->password),
             'rol' => 'usuario',
         ]);
 
