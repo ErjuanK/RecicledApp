@@ -6,110 +6,56 @@
 
 <?php $__env->startSection('content'); ?>
 <main>
-    <div class="superior">
-        <div class="info-artista">
-            <h3>Título</h3>
-            <p class="nombre-artista">Nombre artista</p>
-            <p class="info-contexto">Contexto de canción, biografía, información...</p>
-        </div>
-        <div class="novedades">
-            <h3 class="titulo-novedades">Novedades</h3>
-            <div class="carrusel" id="carrusel">
-                <div class="elemento-carrusel left" data-index="0">
-                    <!-- Album: Lux (Real ID) -->
-                    <a href="<?php echo e(route('album.show', '3SUEJULSGgBDG1j4GQhfYY')); ?>">
-                        <img src="<?php echo e(asset('multimedia/img/Portadas/album/rosalia-lux.webp')); ?>" alt="Lux de Rosalia">
-                    </a>
-                </div>
-                <div class="elemento-carrusel center" data-index="1">
-                    <!-- Album: CHROMAKOPIA (Real ID) -->
-                    <a href="<?php echo e(route('album.show', '0U28P0QVB1QRxpqp5IHOlH')); ?>">
-                        <img src="<?php echo e(asset('multimedia/img/Portadas/album/cromakopia - Tyler the creator.png')); ?>" alt="Chromakopia">
-                    </a>
-                </div>
-                <div class="elemento-carrusel right" data-index="2">
-                    <!-- Album: Debi Tirar Mas Fotos (Real ID) -->
-                    <a href="<?php echo e(route('album.show', '5K79FLRUCSysQnVESLcTdb')); ?>">
-                        <img src="<?php echo e(asset('multimedia/img/Portadas/album/dtmf - bad bunny.png')); ?>" alt="Debi Tirar Mas Fotos">
-                    </a>
-                </div>
+    <div class="superior-centrado" style="display: flex; flex-direction: column; align-items: center; padding: 40px 20px; overflow: hidden; max-width: 100vw;">
+        <h2 style="font-size: 2.2rem; font-weight: bold; margin-bottom: 40px; text-align: center;">Nuevos Lanzamientos</h2>
+        <div class="novedades-full" style="width: 100%; max-width: 1000px; overflow: hidden; position: relative;">
+            <div class="carrusel" id="carrusel" style="justify-content: flex-start;">
+                <?php $__currentLoopData = array_slice($albums, 0, 8); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $album): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                    <div class="elemento-carrusel" data-index="<?php echo e($index); ?>">
+                        <a href="<?php echo e(route('album.show', $album['id'])); ?>">
+                            <img src="<?php echo e($album['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png')); ?>" alt="<?php echo e($album['name']); ?>">
+                        </a>
+                    </div>
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </div>
 
     <div class="mid">
         <div class="encabezado-popular">
-            <h2 class="popular">Lo más escuchado del mes</h2>
+            <h2 class="popular">Lo más escuchado del mes<?php echo e($genre ? ' (' . ucfirst($genre) . ')' : ' en España'); ?></h2>
             <div class="filtro">
-                <select>
-                    <option selected>Selecciona Género</option>
-                    <option value="rock">Rock</option>
-                    <option value="pop">Pop</option>
-                    <option value="electronica">Electrónica</option>
+                <select onchange="window.location.href='?genre=' + this.value">
+                    <option value="" <?php echo e(empty($genre) ? 'selected' : ''); ?>>Todos (Top 50 España)</option>
+                    <option value="rock" <?php echo e($genre == 'rock' ? 'selected' : ''); ?>>Rock</option>
+                    <option value="pop" <?php echo e($genre == 'pop' ? 'selected' : ''); ?>>Pop</option>
+                    <option value="electronica" <?php echo e($genre == 'electronica' ? 'selected' : ''); ?>>Electrónica</option>
+                    <option value="reggaeton" <?php echo e($genre == 'reggaeton' ? 'selected' : ''); ?>>Reggaetón</option>
+                    <option value="hip hop" <?php echo e($genre == 'hip hop' ? 'selected' : ''); ?>>Hip Hop</option>
                 </select>
             </div>
         </div>
 
         <div class="cuadricula-canciones">
-            <div class="elementos">
-                <span class="numero-cancion">1</span>
-                <img src="<?php echo e(asset('multimedia/img/Portadas/album/rosalia-lux.webp')); ?>" alt="Canción 1">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">Berghain</a>
-                </p>
-                <p class="artista">
-                    <a href="<?php echo e(route('artista.show', '7ltDVBr6mKbRvohxheJ9h1')); ?>" class="enlace-discreto">ROSALÍA</a>, Björk & Yves Tumor
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>260.9K</p>
-                </div>
-            </div>
+            <?php $__currentLoopData = $tracks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $track): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="elementos">
+                    <span class="numero-cancion"><?php echo e($index + 1); ?></span>
+                    <img src="<?php echo e($track['album']['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png')); ?>" alt="<?php echo e($track['name']); ?>">
+                    <p class="titulo-cancion">
+                        <a href="<?php echo e(route('cancion.show', $track['id'])); ?>" class="enlace-discreto"><?php echo e(current(explode(' (', $track['name']))); ?></a>
+                    </p>
+                    <p class="artista">
+                        <?php $__currentLoopData = $track['artists']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $i => $artist): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <a href="<?php echo e(route('artista.show', $artist['id'])); ?>" class="enlace-discreto"><?php echo e($artist['name']); ?></a><?php echo e($i < count($track['artists']) - 1 ? ', ' : ''); ?>
 
-            <div class="elementos">
-                <span class="numero-cancion">2</span>
-                <img src="<?php echo e(asset('multimedia/img/Portadas/album/rosalia-lux.webp')); ?>" alt="Canción 2">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">La Perla</a>
-                </p>
-                <p class="artista">
-                    <a href="<?php echo e(route('artista.show', '7ltDVBr6mKbRvohxheJ9h1')); ?>" class="enlace-discreto">ROSALÍA</a> & Yahritza Y Su Esencia
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>143.8K</p>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    </p>
+                    <div class="visualizaciones">
+                        <i class="fa-solid fa-play"></i>
+                        <p><?php echo e(number_format($track['popularity'] ?? 0 * 1000)); ?></p>
+                    </div>
                 </div>
-            </div>
-
-            <div class="elementos">
-                <span class="numero-cancion">3</span>
-                <img src="<?php echo e(asset('multimedia/img/Portadas/album/rosalia-lux.webp')); ?>" alt="Canción 3">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">La Yugular</a>
-                </p>
-                <p class="artista">
-                    <a href="<?php echo e(route('artista.show', '7ltDVBr6mKbRvohxheJ9h1')); ?>" class="enlace-discreto">ROSALÍA</a>
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>118.7K</p>
-                </div>
-            </div>
-
-            <div class="elementos">
-                <span class="numero-cancion">4</span>
-                <img src="<?php echo e(asset('multimedia/img/Portadas/album/dtmf - bad bunny.png')); ?>" alt="Canción 4">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">NUEVAYoL</a>
-                </p>
-                <p class="artista">
-                    <a href="<?php echo e(route('artista.show', '4q3ewBCX7sLwd24euuV69X')); ?>" class="enlace-discreto">Bad Bunny</a>
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>386.1K</p>
-                </div>
-            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
     </div>
 </main>

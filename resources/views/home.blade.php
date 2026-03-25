@@ -6,110 +6,55 @@
 
 @section('content')
 <main>
-    <div class="superior">
-        <div class="info-artista">
-            <h3>Título</h3>
-            <p class="nombre-artista">Nombre artista</p>
-            <p class="info-contexto">Contexto de canción, biografía, información...</p>
-        </div>
-        <div class="novedades">
-            <h3 class="titulo-novedades">Novedades</h3>
-            <div class="carrusel" id="carrusel">
-                <div class="elemento-carrusel left" data-index="0">
-                    <!-- Album: Lux (Real ID) -->
-                    <a href="{{ route('album.show', '3SUEJULSGgBDG1j4GQhfYY') }}">
-                        <img src="{{ asset('multimedia/img/Portadas/album/rosalia-lux.webp') }}" alt="Lux de Rosalia">
-                    </a>
-                </div>
-                <div class="elemento-carrusel center" data-index="1">
-                    <!-- Album: CHROMAKOPIA (Real ID) -->
-                    <a href="{{ route('album.show', '0U28P0QVB1QRxpqp5IHOlH') }}">
-                        <img src="{{ asset('multimedia/img/Portadas/album/cromakopia - Tyler the creator.png') }}" alt="Chromakopia">
-                    </a>
-                </div>
-                <div class="elemento-carrusel right" data-index="2">
-                    <!-- Album: Debi Tirar Mas Fotos (Real ID) -->
-                    <a href="{{ route('album.show', '5K79FLRUCSysQnVESLcTdb') }}">
-                        <img src="{{ asset('multimedia/img/Portadas/album/dtmf - bad bunny.png') }}" alt="Debi Tirar Mas Fotos">
-                    </a>
-                </div>
+    <div class="superior-centrado" style="display: flex; flex-direction: column; align-items: center; padding: 40px 20px; overflow: hidden; max-width: 100vw;">
+        <h2 style="font-size: 2.2rem; font-weight: bold; margin-bottom: 40px; text-align: center;">Nuevos Lanzamientos</h2>
+        <div class="novedades-full" style="width: 100%; max-width: 1000px; overflow: hidden; position: relative;">
+            <div class="carrusel" id="carrusel" style="justify-content: flex-start;">
+                @foreach(array_slice($albums, 0, 8) as $index => $album)
+                    <div class="elemento-carrusel" data-index="{{ $index }}">
+                        <a href="{{ route('album.show', $album['id']) }}">
+                            <img src="{{ $album['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png') }}" alt="{{ $album['name'] }}">
+                        </a>
+                    </div>
+                @endforeach
             </div>
         </div>
     </div>
 
     <div class="mid">
         <div class="encabezado-popular">
-            <h2 class="popular">Lo más escuchado del mes</h2>
+            <h2 class="popular">Lo más escuchado del mes{{ $genre ? ' (' . ucfirst($genre) . ')' : ' en España' }}</h2>
             <div class="filtro">
-                <select>
-                    <option selected>Selecciona Género</option>
-                    <option value="rock">Rock</option>
-                    <option value="pop">Pop</option>
-                    <option value="electronica">Electrónica</option>
+                <select onchange="window.location.href='?genre=' + this.value">
+                    <option value="" {{ empty($genre) ? 'selected' : '' }}>Todos (Top 50 España)</option>
+                    <option value="rock" {{ $genre == 'rock' ? 'selected' : '' }}>Rock</option>
+                    <option value="pop" {{ $genre == 'pop' ? 'selected' : '' }}>Pop</option>
+                    <option value="electronica" {{ $genre == 'electronica' ? 'selected' : '' }}>Electrónica</option>
+                    <option value="reggaeton" {{ $genre == 'reggaeton' ? 'selected' : '' }}>Reggaetón</option>
+                    <option value="hip hop" {{ $genre == 'hip hop' ? 'selected' : '' }}>Hip Hop</option>
                 </select>
             </div>
         </div>
 
         <div class="cuadricula-canciones">
-            <div class="elementos">
-                <span class="numero-cancion">1</span>
-                <img src="{{ asset('multimedia/img/Portadas/album/rosalia-lux.webp') }}" alt="Canción 1">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">Berghain</a>
-                </p>
-                <p class="artista">
-                    <a href="{{ route('artista.show', '7ltDVBr6mKbRvohxheJ9h1') }}" class="enlace-discreto">ROSALÍA</a>, Björk & Yves Tumor
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>260.9K</p>
+            @foreach($tracks as $index => $track)
+                <div class="elementos">
+                    <span class="numero-cancion">{{ $index + 1 }}</span>
+                    <img src="{{ $track['album']['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png') }}" alt="{{ $track['name'] }}">
+                    <p class="titulo-cancion">
+                        <a href="{{ route('cancion.show', $track['id']) }}" class="enlace-discreto">{{ current(explode(' (', $track['name'])) }}</a>
+                    </p>
+                    <p class="artista">
+                        @foreach($track['artists'] as $i => $artist)
+                            <a href="{{ route('artista.show', $artist['id']) }}" class="enlace-discreto">{{ $artist['name'] }}</a>{{ $i < count($track['artists']) - 1 ? ', ' : '' }}
+                        @endforeach
+                    </p>
+                    <div class="visualizaciones">
+                        <i class="fa-solid fa-play"></i>
+                        <p>{{ number_format($track['popularity'] ?? 0 * 1000) }}</p>
+                    </div>
                 </div>
-            </div>
-
-            <div class="elementos">
-                <span class="numero-cancion">2</span>
-                <img src="{{ asset('multimedia/img/Portadas/album/rosalia-lux.webp') }}" alt="Canción 2">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">La Perla</a>
-                </p>
-                <p class="artista">
-                    <a href="{{ route('artista.show', '7ltDVBr6mKbRvohxheJ9h1') }}" class="enlace-discreto">ROSALÍA</a> & Yahritza Y Su Esencia
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>143.8K</p>
-                </div>
-            </div>
-
-            <div class="elementos">
-                <span class="numero-cancion">3</span>
-                <img src="{{ asset('multimedia/img/Portadas/album/rosalia-lux.webp') }}" alt="Canción 3">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">La Yugular</a>
-                </p>
-                <p class="artista">
-                    <a href="{{ route('artista.show', '7ltDVBr6mKbRvohxheJ9h1') }}" class="enlace-discreto">ROSALÍA</a>
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>118.7K</p>
-                </div>
-            </div>
-
-            <div class="elementos">
-                <span class="numero-cancion">4</span>
-                <img src="{{ asset('multimedia/img/Portadas/album/dtmf - bad bunny.png') }}" alt="Canción 4">
-                <p class="titulo-cancion">
-                    <a href="#" class="enlace-discreto">NUEVAYoL</a>
-                </p>
-                <p class="artista">
-                    <a href="{{ route('artista.show', '4q3ewBCX7sLwd24euuV69X') }}" class="enlace-discreto">Bad Bunny</a>
-                </p>
-                <div class="visualizaciones">
-                    <i class="fa-solid fa-eye"></i>
-                    <p>386.1K</p>
-                </div>
-            </div>
+            @endforeach
         </div>
     </div>
 </main>

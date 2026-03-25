@@ -6,10 +6,16 @@ import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 import random
 import os
+from dotenv import load_dotenv
 
-# Configuración de credenciales de Spotify (Idealmente en variables de entorno .env)
-# os.environ['SPOTIPY_CLIENT_ID'] = 'tu_client_id'
-# os.environ['SPOTIPY_CLIENT_SECRET'] = 'tu_client_secret'
+load_dotenv()  # Carga automáticamente el archivo .env de la raíz del proyecto
+
+# Spotipy espera SPOTIPY_CLIENT_ID / SPOTIPY_CLIENT_SECRET, pero el .env de Laravel usa SPOTIFY_*
+# Hacemos el mapeo aquí para no tener que cambiar el .env
+if not os.environ.get('SPOTIPY_CLIENT_ID'):
+    os.environ['SPOTIPY_CLIENT_ID'] = os.environ.get('SPOTIFY_CLIENT_ID', '')
+if not os.environ.get('SPOTIPY_CLIENT_SECRET'):
+    os.environ['SPOTIPY_CLIENT_SECRET'] = os.environ.get('SPOTIFY_CLIENT_SECRET', '')
 
 sp = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials())
 app = FastAPI(title="Motor de Recomendación Musical IA")

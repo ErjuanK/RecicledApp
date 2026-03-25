@@ -9,9 +9,9 @@ class SpotifyService {
     private $clientSecret;
     private $accessToken;
 
-    public function __construct($clientId, $clientSecret) {
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
+    public function __construct($clientId = null, $clientSecret = null) {
+        $this->clientId = $clientId ?: env('SPOTIFY_CLIENT_ID');
+        $this->clientSecret = $clientSecret ?: env('SPOTIFY_CLIENT_SECRET');
         $this->authenticate();
     }
 
@@ -136,6 +136,22 @@ class SpotifyService {
 
     public function getAccessToken() {
         return $this->accessToken;
+    }
+
+    public function getPlaylistTracks($playlistId, $limit = 50) {
+        return Cache::remember("spotify.playlist.{$playlistId}.tracks.{$limit}", 3600, function () use ($playlistId, $limit) {
+            $url = "https://api.spotify.com/v1/playlists/{$playlistId}/tracks?limit={$limit}";
+            $result = $this->request($url);
+            return $result['items'] ?? [];
+        });
+    }
+
+    public function getNewReleases($limit = 10, $country = 'ES') {
+        return Cache::remember("spotify.browse.new-releases.{$country}.{$limit}", 3600, function () use ($limit, $country) {
+            $url = "https://api.spotify.com/v1/browse/new-releases?country={$country}&limit={$limit}";
+            $result = $this->request($url);
+            return $result['albums']['items'] ?? [];
+        });
     }
 
     /**
