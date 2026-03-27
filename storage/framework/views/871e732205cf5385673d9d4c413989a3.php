@@ -7,7 +7,7 @@
 <?php $__env->startSection('content'); ?>
 <main>
     <section class="novedades-showcase">
-        <h2 class="novedades-titulo">Nuevos Lanzamientos</h2>
+        <h2 class="novedades-titulo">LO MAS ESCUCHADO DEL MES</h2>
         <div class="novedades-grid">
             <?php $__currentLoopData = array_slice($albums, 0, 3); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $album): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                 <?php

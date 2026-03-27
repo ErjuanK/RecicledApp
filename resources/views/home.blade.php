@@ -7,7 +7,7 @@
 @section('content')
 <main>
     <section class="novedades-showcase">
-        <h2 class="novedades-titulo">Nuevos Lanzamientos</h2>
+        <h2 class="novedades-titulo">LO MAS ESCUCHADO DEL MES</h2>
         <div class="novedades-grid">
             @foreach(array_slice($albums, 0, 3) as $index => $album)
                 @php
