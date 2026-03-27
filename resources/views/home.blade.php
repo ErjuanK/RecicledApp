@@ -65,9 +65,9 @@
                             <a href="{{ route('artista.show', $artist['id']) }}" class="enlace-discreto">{{ $artist['name'] }}</a>{{ $i < count($track['artists']) - 1 ? ', ' : '' }}
                         @endforeach
                     </p>
-                    <div class="visualizaciones">
-                        <i class="fa-solid fa-play"></i>
-                        <p>{{ number_format($track['popularity'] ?? 0 * 1000) }}</p>
+                    <div class="visualizaciones" title="Reproducciones Globales (Last.fm)">
+                        <i class="fa-solid fa-eye"></i>
+                        <p>{{ $track['playcount_formatted'] ?? '0' }}</p>
                     </div>
                 </div>
             @endforeach

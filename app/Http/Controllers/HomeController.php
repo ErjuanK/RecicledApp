@@ -4,14 +4,17 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\SpotifyService;
+use App\Services\LastFmService;
 
 class HomeController extends Controller
 {
     protected $spotify;
+    protected $lastfm;
 
-    public function __construct(SpotifyService $spotify)
+    public function __construct(SpotifyService $spotify, LastFmService $lastfm)
     {
         $this->spotify = $spotify;
+        $this->lastfm = $lastfm;
     }
 
     public function index(Request $request)
@@ -27,6 +30,27 @@ class HomeController extends Controller
             $tracksData = $this->spotify->searchTracks('year:' . date('Y') . '', 20);
             $tracks = array_slice($tracksData, 0, 5);
         }
+
+        // Obtener la cuenta de reproducciones real de Last.fm para cada canción
+        foreach ($tracks as &$track) {
+            $artistName = $track['artists'][0]['name'] ?? '';
+            $trackName = $track['name'] ?? '';
+            $cleanTrackName = current(explode(' (', $trackName));
+            
+            if ($artistName && $cleanTrackName) {
+                $count = $this->lastfm->getTrackPlaycount($artistName, $cleanTrackName);
+                if ($count >= 1000000) {
+                    $track['playcount_formatted'] = round($count / 1000000, 1) . 'M';
+                } elseif ($count >= 1000) {
+                    $track['playcount_formatted'] = round($count / 1000, 1) . 'K';
+                } else {
+                    $track['playcount_formatted'] = $count;
+                }
+            } else {
+                $track['playcount_formatted'] = 0;
+            }
+        }
+        unset($track);
 
         // 2. Fetch Albums para la cuadrícula (exactamente 3)
         $albumsData = [];

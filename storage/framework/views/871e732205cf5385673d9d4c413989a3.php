@@ -66,9 +66,9 @@
 
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </p>
-                    <div class="visualizaciones">
-                        <i class="fa-solid fa-play"></i>
-                        <p><?php echo e(number_format($track['popularity'] ?? 0 * 1000)); ?></p>
+                    <div class="visualizaciones" title="Reproducciones Globales (Last.fm)">
+                        <i class="fa-solid fa-eye"></i>
+                        <p><?php echo e($track['playcount_formatted'] ?? '0'); ?></p>
                     </div>
                 </div>
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
