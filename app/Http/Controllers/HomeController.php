@@ -28,8 +28,27 @@ class HomeController extends Controller
             $tracks = array_slice($tracksData, 0, 5);
         }
 
-        // 2. Fetch Albums para el carrusel (exactamente 3)
-        $albumsData = $this->spotify->getNewReleases(20, 'ES');
+        // 2. Fetch Albums para la cuadrícula (exactamente 3)
+        $albumsData = [];
+        if ($genre && !empty($tracksData)) {
+            // La API de Spotify no soporta el filtro 'genre:' directamente para álbumes.
+            // Solución impecable: Extraemos los álbumes de las pistas top obtenidas para ese género.
+            $seenAlbumIds = [];
+            foreach ($tracksData as $t) {
+                if (isset($t['album']) && $t['album']['album_type'] === 'album') {
+                    if (!in_array($t['album']['id'], $seenAlbumIds)) {
+                        $seenAlbumIds[] = $t['album']['id'];
+                        $albumsData[] = $t['album'];
+                    }
+                }
+                if (count($albumsData) >= 3) break;
+            }
+        }
+
+        // Fallback: Si no hay género seleccionado o no logramos extraer 3 álbumes del género
+        if (count($albumsData) < 3) {
+            $albumsData = $this->spotify->getNewReleases(20, 'ES');
+        }
         
         $albums = [];
         foreach ($albumsData as $album) {
