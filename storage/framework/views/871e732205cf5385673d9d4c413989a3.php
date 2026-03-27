@@ -6,20 +6,36 @@
 
 <?php $__env->startSection('content'); ?>
 <main>
-    <div class="superior-centrado" style="display: flex; flex-direction: column; align-items: center; padding: 40px 20px; overflow: hidden; max-width: 100vw;">
-        <h2 style="font-size: 2.2rem; font-weight: bold; margin-bottom: 40px; text-align: center;">Nuevos Lanzamientos</h2>
-        <div class="novedades-full" style="width: 100%; max-width: 1000px; overflow: hidden; position: relative;">
-            <div class="carrusel" id="carrusel" style="justify-content: flex-start;">
-                <?php $__currentLoopData = array_slice($albums, 0, 8); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $album): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div class="elemento-carrusel" data-index="<?php echo e($index); ?>">
-                        <a href="<?php echo e(route('album.show', $album['id'])); ?>">
-                            <img src="<?php echo e($album['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png')); ?>" alt="<?php echo e($album['name']); ?>">
-                        </a>
+    <section class="novedades-showcase">
+        <h2 class="novedades-titulo">Nuevos Lanzamientos</h2>
+        <div class="novedades-grid">
+            <?php $__currentLoopData = array_slice($albums, 0, 3); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $album): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php
+                    $genres = array_slice($album['genres'] ?? [], 0, 3);
+                    $albumName = $album['name'] ?? 'Álbum';
+                    $imgUrl = $album['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png');
+                    $albumId = $album['id'];
+                    $artistName = $album['artists'][0]['name'] ?? 'Varios Artistas';
+                ?>
+                <a href="<?php echo e(route('album.show', $albumId)); ?>" class="tarjeta-novedad">
+                    <img src="<?php echo e($imgUrl); ?>" alt="<?php echo e($albumName); ?>" class="tarjeta-fondo">
+                    <div class="tarjeta-overlay">
+                        <div class="tarjeta-info">
+                            <p class="tarjeta-artista"><?php echo e($artistName); ?></p>
+                            <h3 class="tarjeta-nombre"><?php echo e($albumName); ?></h3>
+                            <?php if(!empty($genres)): ?>
+                                <div class="tarjeta-generos">
+                                    <?php $__currentLoopData = $genres; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $g): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                        <span class="tarjeta-tag"><?php echo e(ucfirst($g)); ?></span>
+                                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
                     </div>
-                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-            </div>
+                </a>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
-    </div>
+    </section>
 
     <div class="mid">
         <div class="encabezado-popular">

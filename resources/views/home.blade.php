@@ -6,20 +6,36 @@
 
 @section('content')
 <main>
-    <div class="superior-centrado" style="display: flex; flex-direction: column; align-items: center; padding: 40px 20px; overflow: hidden; max-width: 100vw;">
-        <h2 style="font-size: 2.2rem; font-weight: bold; margin-bottom: 40px; text-align: center;">Nuevos Lanzamientos</h2>
-        <div class="novedades-full" style="width: 100%; max-width: 1000px; overflow: hidden; position: relative;">
-            <div class="carrusel" id="carrusel" style="justify-content: flex-start;">
-                @foreach(array_slice($albums, 0, 8) as $index => $album)
-                    <div class="elemento-carrusel" data-index="{{ $index }}">
-                        <a href="{{ route('album.show', $album['id']) }}">
-                            <img src="{{ $album['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png') }}" alt="{{ $album['name'] }}">
-                        </a>
+    <section class="novedades-showcase">
+        <h2 class="novedades-titulo">Nuevos Lanzamientos</h2>
+        <div class="novedades-grid">
+            @foreach(array_slice($albums, 0, 3) as $index => $album)
+                @php
+                    $genres = array_slice($album['genres'] ?? [], 0, 3);
+                    $albumName = $album['name'] ?? 'Álbum';
+                    $imgUrl = $album['images'][0]['url'] ?? asset('multimedia/img/Portadas/album/default.png');
+                    $albumId = $album['id'];
+                    $artistName = $album['artists'][0]['name'] ?? 'Varios Artistas';
+                @endphp
+                <a href="{{ route('album.show', $albumId) }}" class="tarjeta-novedad">
+                    <img src="{{ $imgUrl }}" alt="{{ $albumName }}" class="tarjeta-fondo">
+                    <div class="tarjeta-overlay">
+                        <div class="tarjeta-info">
+                            <p class="tarjeta-artista">{{ $artistName }}</p>
+                            <h3 class="tarjeta-nombre">{{ $albumName }}</h3>
+                            @if(!empty($genres))
+                                <div class="tarjeta-generos">
+                                    @foreach($genres as $g)
+                                        <span class="tarjeta-tag">{{ ucfirst($g) }}</span>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
                     </div>
-                @endforeach
-            </div>
+                </a>
+            @endforeach
         </div>
-    </div>
+    </section>
 
     <div class="mid">
         <div class="encabezado-popular">
