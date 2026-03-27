@@ -121,6 +121,7 @@
     letter-spacing: 0.08em;
     margin: 0 0 4px;
     opacity: 0.9;
+    text-align: center;
 }
 
 .tarjeta-nombre {
@@ -130,23 +131,30 @@
     margin: 0 0 12px;
     line-height: 1.2;
     text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    text-align: center;
 }
 
 /* Etiquetas de géneros */
 .tarjeta-generos {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     gap: 8px;
-    /* Los géneros aparecen lentamente en el hover */
+    /* Los géneros no ocupan espacio inicialmente para que el título baje */
     opacity: 0;
+    max-height: 0;
+    overflow: hidden;
     transform: translateY(10px);
-    transition: opacity 0.4s ease, transform 0.4s ease;
-    transition-delay: 0.1s;
+    transition: all 0.4s ease;
 }
 
 .tarjeta-novedad:hover .tarjeta-generos {
     opacity: 1;
+    max-height: 200px;
+    margin-top: 8px;
+    padding-bottom: 12px;
     transform: translateY(0);
+    transition-delay: 0.1s;
 }
 
 .tarjeta-tag {
