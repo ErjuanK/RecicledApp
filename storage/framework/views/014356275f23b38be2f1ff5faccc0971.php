@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>R E C I C L E D ☆ — <?php echo $__env->yieldContent('title', 'Tu Música'); ?></title>
     <link rel="shortcut icon" href="<?php echo e(asset('multimedia/img/logo_3d.ico')); ?>" type="image/x-icon">
     
@@ -161,7 +162,7 @@
         <nav>
             <a href="#">LANZAMIENTOS</a>
             <a href="<?php echo e(url('/discovery')); ?>">DESCUBRIMIENTOS</a>
-            <a href="#">PARA TI</a>
+            <a href="<?php echo e(url('/for-you')); ?>">PARA TI</a>
         </nav>
     </div>
 
