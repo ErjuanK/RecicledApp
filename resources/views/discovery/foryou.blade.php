@@ -87,6 +87,44 @@
         pointer-events: none;
     }
 
+    /* ── Overlay de Pausa/Play al pasar el cursor ── */
+    #fy-hover-control {
+        position: absolute;
+        inset: 0;
+        z-index: 25;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(13,0,26,0);
+        transition: background 0.25s ease;
+        cursor: pointer;
+        /* El icono empieza invisible */
+    }
+    #fy-hover-control:hover {
+        background: rgba(13,0,26,0.45);
+    }
+    #fy-hover-control .fy-hc-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: rgba(81,18,129,0.85);
+        box-shadow: 0 0 30px rgba(124,58,237,0.7);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: opacity 0.2s ease, transform 0.2s ease;
+        pointer-events: none;
+        border: 2px solid rgba(192,132,252,0.4);
+        backdrop-filter: blur(4px);
+    }
+    #fy-hover-control:hover .fy-hc-icon {
+        opacity: 1;
+        transform: scale(1);
+    }
+    /* El icono SOLO aparece al hacer hover, nunca persiste al salir el cursor */
+
     /* Indicadores de swipe */
     .fy-swipe-indicator {
         position: absolute;
@@ -417,6 +455,20 @@
                     <svg width="36" height="36" fill="white" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
                 </div>
             </div>
+
+            <!-- Overlay de Pausa/Play al hacer hover -->
+            <div id="fy-hover-control">
+                <div class="fy-hc-icon" id="fy-hc-icon">
+                    <!-- Icono cambia entre pausa y play via JS -->
+                    <svg id="fy-hc-pause-svg" width="28" height="28" fill="white" viewBox="0 0 24 24">
+                        <rect x="6" y="4" width="4" height="16" rx="1"/>
+                        <rect x="14" y="4" width="4" height="16" rx="1"/>
+                    </svg>
+                    <svg id="fy-hc-play-svg" width="28" height="28" fill="white" viewBox="0 0 24 24" style="display:none;margin-left:3px">
+                        <path d="M5 3l14 9-14 9V3z"/>
+                    </svg>
+                </div>
+            </div>
         </div>
 
         <!-- Info -->
@@ -479,6 +531,9 @@ document.addEventListener('DOMContentLoaded', () => {
         volSlider: document.getElementById('fy-vol-slider'),
         volIcon: document.getElementById('fy-vol-icon'),
         playOverlay: document.getElementById('fy-play-overlay'),
+        hoverControl: document.getElementById('fy-hover-control'),
+        hcPauseSvg: document.getElementById('fy-hc-pause-svg'),
+        hcPlaySvg: document.getElementById('fy-hc-play-svg'),
         likeInd: document.getElementById('fy-like-ind'),
         nopeInd: document.getElementById('fy-nope-ind'),
         audio: document.getElementById('fy-audio'),
@@ -685,6 +740,32 @@ document.addEventListener('DOMContentLoaded', () => {
     el.btnLike.addEventListener('click', () => commitSwipe('like', window.innerWidth * 1.5));
     el.btnNope.addEventListener('click', () => commitSwipe('dislike', -window.innerWidth * 1.5));
     el.btnSkip.addEventListener('click', () => commitSwipe('like', window.innerWidth * 1.5));
+
+    /* ── Hover Control: clic en la portada = pausa/reanuda ── */
+    // Solo actualiza qué icono se muestra (pausa o play)
+    // La VISIBILIDAD del icono la controla solo el CSS :hover
+    function updateHoverControlIcon(paused) {
+        el.hcPauseSvg.style.display = paused ? 'none' : 'block';
+        el.hcPlaySvg.style.display  = paused ? 'block' : 'none';
+        // Sin is-paused: el icono desaparece cuando el cursor sale, siempre
+    }
+
+    el.hoverControl.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (!audioUnlocked) {
+            audioUnlocked = true;
+            el.audio.play()
+                .then(() => { el.playOverlay.classList.add('hidden'); updateHoverControlIcon(false); })
+                .catch(() => {});
+            return;
+        }
+        if (el.audio.paused) {
+            el.audio.play().then(() => updateHoverControlIcon(false)).catch(() => {});
+        } else {
+            el.audio.pause();
+            updateHoverControlIcon(true);
+        }
+    });
 
     /* ── Eventos táctiles y ratón ── */
     el.card.addEventListener('mousedown', handleStart);
