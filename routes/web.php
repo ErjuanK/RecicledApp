@@ -96,4 +96,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/for-you', [\App\Http\Controllers\ForYouController::class, 'index'])->name('foryou');
     Route::get('/api/for-you/next', [\App\Http\Controllers\ForYouController::class, 'getNextTrack']);
     Route::post('/api/for-you/action', [\App\Http\Controllers\ForYouController::class, 'handleAction']);
+
+    // Mis Me Gustas
+    Route::get('/mis-megustas', [\App\Http\Controllers\LikesController::class, 'index'])->name('likes.index');
+    Route::post('/api/likes/toggle', [\App\Http\Controllers\LikesController::class, 'toggle'])->name('likes.toggle');
+    Route::get('/api/likes/check', [\App\Http\Controllers\LikesController::class, 'check'])->name('likes.check');
+    Route::delete('/mis-megustas/{id}', [\App\Http\Controllers\LikesController::class, 'destroy'])->name('likes.destroy');
 });
+

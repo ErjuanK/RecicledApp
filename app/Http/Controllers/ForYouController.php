@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\UserSongAction;
+use App\Models\UserLike;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Cache;
+
 
 class ForYouController extends Controller
 {
@@ -147,25 +149,50 @@ class ForYouController extends Controller
         });
     }
 
-    // API para guardar el Swipe (igual que antes)
+    // API para guardar el Swipe
     public function handleAction(Request $request)
     {
         $request->validate([
-            'track_id' => 'required|string',
-            'album_id' => 'nullable|string',
-            'action'   => 'required|in:like,dislike'
+            'track_id'    => 'required|string',
+            'album_id'    => 'nullable|string',
+            'action'      => 'required|in:like,dislike',
+            // Metadatos opcionales para guardar en user_likes
+            'track_name'  => 'nullable|string',
+            'artist_name' => 'nullable|string',
+            'image_url'   => 'nullable|string',
+            'preview_url' => 'nullable|string',
+            'external_url'=> 'nullable|string',
         ]);
 
+        $userId = Auth::id();
+
+        // Siempre guardamos en UserSongAction para el motor de recomendaciones
         UserSongAction::updateOrCreate(
-            [
-                'user_id'          => Auth::id(),
-                'spotify_track_id' => $request->track_id,
-            ],
-            [
-                'album_id' => $request->album_id,
-                'action'   => $request->action,
-            ]
+            ['user_id' => $userId, 'spotify_track_id' => $request->track_id],
+            ['album_id' => $request->album_id, 'action' => $request->action]
         );
+
+        // Si es un LIKE, también lo guardamos en user_likes para "Mis Me Gustas"
+        if ($request->action === 'like' && $request->track_name) {
+            UserLike::updateOrCreate(
+                ['user_id' => $userId, 'type' => 'song', 'spotify_id' => $request->track_id],
+                [
+                    'name'         => $request->track_name,
+                    'artist_name'  => $request->artist_name,
+                    'image_url'    => $request->image_url,
+                    'external_url' => $request->external_url,
+                    'extra'        => ['preview_url' => $request->preview_url],
+                ]
+            );
+        }
+
+        // Si era DISLIKE y existía un like previo, lo eliminamos
+        if ($request->action === 'dislike') {
+            UserLike::where('user_id', $userId)
+                ->where('type', 'song')
+                ->where('spotify_id', $request->track_id)
+                ->delete();
+        }
 
         return response()->json(['status' => 'success']);
     }

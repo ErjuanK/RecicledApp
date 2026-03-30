@@ -726,9 +726,15 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Accept': 'application/json'
                 },
                 body: JSON.stringify({
-                    track_id: currentTrack.id,
-                    album_id: currentTrack.album?.id,
-                    action
+                    track_id:     currentTrack.id,
+                    album_id:     currentTrack.album?.id,
+                    action,
+                    // Metadatos para Mis Me Gustas (solo necesarios en like)
+                    track_name:   currentTrack.name,
+                    artist_name:  (currentTrack.artists || []).map(a => a.name).join(', '),
+                    image_url:    currentTrack.album?.images?.[0]?.url || '',
+                    preview_url:  currentTrack.preview_url || '',
+                    external_url: currentTrack.external_urls?.spotify || '',
                 })
             });
         } catch(e) {}
