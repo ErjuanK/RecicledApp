@@ -1,16 +1,23 @@
 <?php $__env->startPush('styles'); ?>
 <style>
-    body { overflow: hidden; }
+    /* Eliminar el padding global de main y el fondo blanco del body en esta página */
+    body  { overflow: hidden; background: #0d001a !important; }
+    main  { padding: 0 !important; background: #0d001a !important; }
 
     /* ── Contenedor principal ── */
     #foryou-wrap {
-        height: calc(100vh - 130px); /* descontar header+nav */
+        height: calc(100vh - 130px);
+        width: 100%;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 10px;
+        padding: 12px 0 8px;
         background: linear-gradient(160deg, #0d001a 0%, #1a0035 60%, #2e0049 100%);
         position: relative;
         overflow: hidden;
+        margin: 0;
     }
 
     /* ── Fondo difuminado dinámico ── */
@@ -29,7 +36,12 @@
     #fy-card {
         position: relative;
         z-index: 10;
+        flex-shrink: 1;
         width: min(400px, 90vw);
+        /* Asegurar que la tarjeta nunca sea más alta que el espacio disponible */
+        max-height: calc(100vh - 200px);
+        overflow-y: auto;
+        overflow-x: hidden;
         background: rgba(255,255,255,0.04);
         border: 1px solid rgba(208,150,255,0.2);
         border-radius: 28px;
@@ -329,17 +341,14 @@
         box-shadow: 0 8px 24px rgba(124,58,237,0.5);
     }
 
-    /* "Para Ti" badge top-center */
+    /* "Para Ti" badge — ahora en el flujo normal, siempre encima de la tarjeta */
     #fy-badge {
-        position: absolute;
-        top: 16px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 20;
+        flex-shrink: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         pointer-events: none;
+        z-index: 20;
     }
     #fy-badge h1 {
         font-family: 'Roboto', sans-serif;
