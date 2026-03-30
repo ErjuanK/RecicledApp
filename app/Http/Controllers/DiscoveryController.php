@@ -2,18 +2,21 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\AiService;
 use App\Services\SpotifyService;
 use Illuminate\Http\Request;
 
 class DiscoveryController extends Controller
 {
     private SpotifyService $spotify;
+    private AiService $ai;
 
     public function __construct()
     {
-        $clientId = config('services.spotify.client_id');
+        $clientId     = config('services.spotify.client_id');
         $clientSecret = config('services.spotify.client_secret');
         $this->spotify = new SpotifyService($clientId, $clientSecret);
+        $this->ai      = new AiService();
     }
 
     /**
@@ -29,7 +32,6 @@ class DiscoveryController extends Controller
      */
     public function getAvailableGenres()
     {
-        // Curated list of Spotify seed genres (subset of available_genre_seeds)
         $genres = [
             'acoustic', 'afrobeat', 'alt-rock', 'alternative', 'ambient',
             'blues', 'bossanova', 'brazil', 'breakbeat', 'british',
@@ -62,7 +64,7 @@ class DiscoveryController extends Controller
     public function searchSpotify(Request $request)
     {
         $query = $request->input('q', '');
-        $type = $request->input('type', 'album');
+        $type  = $request->input('type', 'album');
 
         if (strlen($query) < 2) {
             return response()->json([]);
@@ -75,7 +77,7 @@ class DiscoveryController extends Controller
 
         $encodedQuery = urlencode($query);
         $limit = 8;
-        $url = "https://api.spotify.com/v1/search?q={$encodedQuery}&type={$type}&limit={$limit}&market=ES";
+        $url   = "https://api.spotify.com/v1/search?q={$encodedQuery}&type={$type}&limit={$limit}&market=ES";
 
         $ch = curl_init($url);
         curl_setopt_array($ch, [
@@ -96,7 +98,7 @@ class DiscoveryController extends Controller
             return response()->json([], 500);
         }
 
-        $data = json_decode($response, true);
+        $data    = json_decode($response, true);
         $results = [];
 
         if ($type === 'album' && isset($data['albums']['items'])) {
@@ -112,8 +114,8 @@ class DiscoveryController extends Controller
             }
         } elseif ($type === 'track' && isset($data['tracks']['items'])) {
             foreach ($data['tracks']['items'] as $track) {
-                $minutes = floor($track['duration_ms'] / 60000);
-                $seconds = round(($track['duration_ms'] % 60000) / 1000);
+                $minutes   = floor($track['duration_ms'] / 60000);
+                $seconds   = round(($track['duration_ms'] % 60000) / 1000);
                 $results[] = [
                     'id'       => $track['id'],
                     'name'     => $track['name'],
@@ -130,25 +132,62 @@ class DiscoveryController extends Controller
     }
 
     /**
-     * Receive user selections and generate the discovery dashboard.
-     * Uses Spotify's recommendations API directly for real results.
+     * Receive user selections, run them through Gemma/Ollama for smart seeds,
+     * then use Spotify recommendations to generate the discovery dashboard.
+     *
      * POST /discovery/generate
+     * Body:
+     *   genres                 array   e.g. ["rock", "indie"]
+     *   album_ids              array   e.g. ["0bCAjiLamIL9QFQ7cNFQUF"]
+     *   track_ids              array   e.g. ["4cOdK2wGLETKBW3PvgPWqT"]
+     *   selected_albums_names  array   e.g. ["Random Access Memories"]
+     *   selected_tracks_names  array   e.g. ["Starboy"]
      */
     public function generateDashboard(Request $request)
     {
-        $genres   = $request->input('genres', []);
-        $albumIds = $request->input('album_ids', []);
-        $trackIds = $request->input('track_ids', []);
+        $genres     = $request->input('genres', []);
+        $albumIds   = $request->input('album_ids', []);
+        $trackIds   = $request->input('track_ids', []);
+        $albumNames = $request->input('selected_albums_names', []);
+        $trackNames = $request->input('selected_tracks_names', []);
 
+        // ── 1. Ask Gemma/Ollama to analyse the musical "trinity" ──────────────
+        $aiVibe = null;
+        if (!empty($genres)) {
+            $aiVibe = $this->ai->getSmartSeeds([
+                'genres' => $genres,
+                'albums' => $albumNames,
+                'tracks' => $trackNames,
+            ]);
+        }
+
+        // ── 2. Build enriched genre list for Spotify ───────────────────────────
+        // Merge AI seeds with original genres; AI seeds take priority.
+        $enrichedGenres = $genres;
+        if ($aiVibe) {
+            $aiSeeds        = array_map('trim', explode(',', $aiVibe));
+            $enrichedGenres = array_unique(array_merge($aiSeeds, $genres));
+        }
+
+        // ── 3. Get Spotify recommendations ────────────────────────────────────
         try {
-            $recommendations = $this->spotify->getRecommendations($genres, $albumIds, $trackIds);
+            $recommendations = $this->spotify->getRecommendations(
+                $enrichedGenres,
+                $albumIds,
+                $trackIds
+            );
+
+            $recommendations['ai_vibe'] = $aiVibe;
+
             return response()->json($recommendations);
+
         } catch (\Exception $e) {
             \Log::error('Discovery recommendations failed: ' . $e->getMessage());
             return response()->json([
                 'recommended_albums'  => [],
                 'recommended_singles' => [],
                 'weekly_playlist'     => [],
+                'ai_vibe'             => null,
             ]);
         }
     }

@@ -46,4 +46,10 @@ return [
         'access_token' => env('GENIUS_ACCESS_TOKEN'),
     ],
 
+    'ollama' => [
+        'url'     => env('OLLAMA_URL', 'http://localhost:11434'),
+        'model'   => env('OLLAMA_MODEL', 'gemma2'),
+        'timeout' => env('OLLAMA_TIMEOUT', 20),
+    ],
+
 ];
