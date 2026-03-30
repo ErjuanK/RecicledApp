@@ -3,360 +3,712 @@
 @push('styles')
 <style>
     body { overflow: hidden; }
+
+    /* ── Contenedor principal ── */
+    #foryou-wrap {
+        height: calc(100vh - 130px); /* descontar header+nav */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(160deg, #0d001a 0%, #1a0035 60%, #2e0049 100%);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* ── Fondo difuminado dinámico ── */
+    #fy-bg {
+        position: absolute;
+        inset: 0;
+        background-size: cover;
+        background-position: center;
+        filter: blur(40px) brightness(0.35) saturate(1.6);
+        transform: scale(1.1);
+        transition: background-image 0.8s ease;
+        z-index: 0;
+    }
+
+    /* ── Tarjeta vertical ── */
+    #fy-card {
+        position: relative;
+        z-index: 10;
+        width: min(400px, 90vw);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(208,150,255,0.2);
+        border-radius: 28px;
+        backdrop-filter: blur(20px);
+        overflow: hidden;
+        box-shadow:
+            0 0 0 1px rgba(81,18,129,0.4),
+            0 30px 80px rgba(0,0,0,0.7),
+            inset 0 1px 0 rgba(255,255,255,0.08);
+        cursor: grab;
+        user-select: none;
+        touch-action: none;
+        will-change: transform;
+        transition: transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    #fy-card:active { cursor: grabbing; }
+
+    /* portada cuadrada */
+    #fy-cover-wrap {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 1/1;
+        overflow: hidden;
+    }
+    #fy-cover {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        transition: transform 0.6s ease;
+    }
+    #fy-card:hover #fy-cover { transform: scale(1.03); }
+
+    /* Gradiente inferior sobrepuesto en la portada */
+    #fy-cover-wrap::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 55%;
+        background: linear-gradient(to top, rgba(13,0,26,0.95) 0%, transparent 100%);
+        pointer-events: none;
+    }
+
+    /* Indicadores de swipe */
+    .fy-swipe-indicator {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%) scale(0.7);
+        opacity: 0;
+        transition: opacity 0.15s, transform 0.15s;
+        pointer-events: none;
+        z-index: 30;
+        border-radius: 50%;
+        width: 72px;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    #fy-like-ind  { right: 20px; background: rgba(81,18,129,0.9); box-shadow: 0 0 30px rgba(108,0,180,0.8); }
+    #fy-nope-ind  { left: 20px;  background: rgba(120,0,30,0.9); box-shadow: 0 0 30px rgba(200,0,60,0.8); }
+
+    /* Info debajo de la portada */
+    #fy-info {
+        padding: 16px 20px 0;
+        text-align: left;
+    }
+    #fy-title {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #fff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        letter-spacing: -.3px;
+    }
+    #fy-artist {
+        font-size: 0.95rem;
+        color: #c084fc;
+        margin-top: 3px;
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    #fy-album {
+        font-size: 0.78rem;
+        color: rgba(208,150,255,0.55);
+        margin-top: 2px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* ── Barra de progreso ── */
+    #fy-progress-wrap {
+        margin: 14px 20px 0;
+        height: 4px;
+        background: rgba(255,255,255,0.12);
+        border-radius: 99px;
+        overflow: hidden;
+    }
+    #fy-progress-bar {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #7c3aed, #c084fc);
+        border-radius: 99px;
+        transition: width 0.5s linear;
+    }
+
+    /* ── Fila de tiempo ── */
+    #fy-times {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 20px 0;
+        font-size: 0.72rem;
+        color: rgba(208,150,255,0.6);
+        font-variant-numeric: tabular-nums;
+    }
+
+    /* ── Control de volumen ── */
+    #fy-volume-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+    }
+    #fy-vol-icon {
+        color: rgba(208,150,255,0.7);
+        font-size: 1rem;
+        flex-shrink: 0;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    #fy-vol-icon:hover { color: #c084fc; }
+
+    #fy-vol-slider {
+        flex: 1;
+        -webkit-appearance: none;
+        appearance: none;
+        height: 4px;
+        border-radius: 99px;
+        background: rgba(255,255,255,0.15);
+        outline: none;
+        cursor: pointer;
+    }
+    #fy-vol-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #a855f7;
+        box-shadow: 0 0 8px rgba(168,85,247,0.6);
+        cursor: pointer;
+        transition: transform 0.15s;
+    }
+    #fy-vol-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+    #fy-vol-slider::-moz-range-thumb {
+        width: 14px; height: 14px;
+        border-radius: 50%;
+        background: #a855f7;
+        border: none;
+        cursor: pointer;
+    }
+
+    /* ── Botones de acción ── */
+    #fy-actions {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 28px;
+        padding: 14px 20px 22px;
+    }
+    .fy-btn {
+        border: none;
+        cursor: pointer;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s, box-shadow 0.2s;
+        outline: none;
+    }
+    .fy-btn:active { transform: scale(0.88) !important; }
+
+    #btn-nope {
+        width: 58px; height: 58px;
+        background: rgba(180, 0, 50, 0.15);
+        border: 2px solid rgba(220, 0, 60, 0.4);
+        color: #f87171;
+    }
+    #btn-nope:hover {
+        background: rgba(200, 0, 50, 0.25);
+        border-color: #f87171;
+        transform: scale(1.08);
+        box-shadow: 0 0 20px rgba(248,113,113,0.3);
+    }
+
+    #btn-like {
+        width: 72px; height: 72px;
+        background: linear-gradient(135deg, #511281, #7c3aed);
+        border: 2px solid rgba(168,85,247,0.6);
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(81,18,129,0.5);
+    }
+    #btn-like:hover {
+        transform: scale(1.1);
+        box-shadow: 0 12px 36px rgba(124,58,237,0.7);
+    }
+
+    #btn-skip {
+        width: 46px; height: 46px;
+        background: rgba(255,255,255,0.05);
+        border: 2px solid rgba(208,150,255,0.2);
+        color: rgba(208,150,255,0.7);
+    }
+    #btn-skip:hover {
+        border-color: rgba(208,150,255,0.5);
+        color: #c084fc;
+        transform: scale(1.08);
+    }
+
+    /* ── Overlay de play (primera interacción) ── */
+    #fy-play-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(13,0,26,0.65);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 40;
+        backdrop-filter: blur(4px);
+        transition: opacity 0.3s;
+    }
+    #fy-play-overlay.hidden { display: none; }
+    .fy-play-btn-big {
+        width: 80px; height: 80px;
+        background: linear-gradient(135deg, #511281, #7c3aed);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 40px rgba(124,58,237,0.7);
+        animation: pulse-purple 2s infinite;
+    }
+    @keyframes pulse-purple {
+        0%,100% { box-shadow: 0 0 30px rgba(124,58,237,0.5); }
+        50%      { box-shadow: 0 0 60px rgba(124,58,237,0.9); }
+    }
+
+    /* ── Estados loading / error ── */
+    #fy-loading, #fy-error {
+        position: absolute;
+        inset: 0;
+        z-index: 50;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+    }
+    #fy-loading { display: flex; }
+    #fy-error   { display: none; }
+
+    .fy-spinner {
+        width: 52px; height: 52px;
+        border: 3px solid rgba(168,85,247,0.2);
+        border-top-color: #a855f7;
+        border-left-color: #c084fc;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .fy-loading-text {
+        color: rgba(208,150,255,0.8);
+        font-size: 0.88rem;
+        text-align: center;
+        line-height: 1.6;
+        font-family: 'Roboto', sans-serif;
+    }
+
+    #fy-error-msg  { color: #f87171; font-weight: 700; font-size: 1rem; text-align: center; }
+    #fy-retry-btn {
+        padding: 10px 28px;
+        background: linear-gradient(135deg, #511281, #7c3aed);
+        color: #fff;
+        border: none;
+        border-radius: 99px;
+        font-weight: 700;
+        cursor: pointer;
+        font-family: 'Roboto', sans-serif;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #fy-retry-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 8px 24px rgba(124,58,237,0.5);
+    }
+
+    /* "Para Ti" badge top-center */
+    #fy-badge {
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 20;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+    }
+    #fy-badge h1 {
+        font-family: 'Roboto', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 900;
+        color: transparent;
+        background: linear-gradient(90deg, #c084fc, #a855f7, #7c3aed);
+        -webkit-background-clip: text;
+        background-clip: text;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    #fy-badge p {
+        font-size: 0.62rem;
+        color: rgba(208,150,255,0.6);
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        margin-top: 2px;
+    }
 </style>
 @endpush
 
 @section('content')
-<div id="foryou-container" class="h-[calc(100vh-4rem)] w-full relative flex items-center justify-center overflow-hidden bg-black">
-    
-    <div id="background-blur" class="absolute inset-0 z-0 hidden">
-        <img id="bg-img" src="" class="w-full h-full object-cover opacity-40 blur-3xl scale-110 transition-all duration-1000 transform-gpu">
-        <div class="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-black/90"></div>
+<div id="foryou-wrap">
+    <!-- Fondo dinámico -->
+    <div id="fy-bg"></div>
+
+    <!-- Badge superior -->
+    <div id="fy-badge">
+        <h1>Para Ti</h1>
+        <p>Explora & Desliza</p>
     </div>
 
-    <!-- Header Overlay -->
-    <div class="absolute top-0 z-50 w-full p-6 text-center drop-shadow-lg pointer-events-none">
-        <h1 class="text-2xl sm:text-3xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Para Ti</h1>
-        <p class="text-xs sm:text-sm text-green-100/70 font-bold tracking-widest uppercase mt-1">Explora & Desliza</p>
+    <!-- Estado: cargando -->
+    <div id="fy-loading">
+        <div class="fy-spinner"></div>
+        <p class="fy-loading-text">Sintonizando tu vibra…<br>Cargando música</p>
     </div>
 
-    <div id="loading-state" class="absolute inset-0 z-10 flex items-center justify-center">
-        <div class="flex flex-col items-center">
-            <div class="animate-spin rounded-full h-14 w-14 border-b-2 border-l-2 border-green-400 mb-6 drop-shadow-lg shadow-green-500/50"></div>
-            <p class="text-gray-300 text-sm sm:text-base font-medium text-center leading-relaxed">Sintonizando tu vibra...<br>Cargando música</p>
-        </div>
+    <!-- Estado: error -->
+    <div id="fy-error">
+        <p id="fy-error-msg">Nos quedamos sin ritmos</p>
+        <button id="fy-retry-btn" onclick="window.location.reload()">Reintentar</button>
     </div>
 
-    <div id="error-state" class="hidden absolute inset-0 z-10 flex items-center justify-center">
-        <div class="text-center p-8 bg-black/60 rounded-3xl backdrop-blur-md border border-red-500/20 shadow-2xl mx-4">
-            <p class="text-red-400 font-bold mb-6 text-lg">Nos quedamos sin ritmos</p>
-            <button onclick="window.location.reload()" class="px-8 py-3 bg-gradient-to-r from-red-500 to-rose-600 text-white rounded-full font-bold shadow-xl hover:scale-105 transition-transform">Actualizar</button>
-        </div>
-    </div>
+    <!-- Tarjeta principal -->
+    <div id="fy-card" class="hidden">
+        <!-- Portada -->
+        <div id="fy-cover-wrap">
+            <img id="fy-cover" src="" alt="Portada" draggable="false">
 
-    <!-- Pista interactiva perfectamente centrada -->
-    <div id="track-card" class="hidden relative z-10 w-full max-w-4xl px-4 sm:px-6 mx-auto flex flex-col items-center justify-center h-full max-h-screen py-24" style="user-select: none; touch-action: none; will-change: transform;">
-        
-        <div class="w-full relative rounded-[2rem] overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.8)] border border-white/10 bg-black/50 backdrop-blur-sm" style="aspect-ratio: 16/9; transform-origin: center center;">
-            
-            <div id="swipe-right-overlay" class="opacity-0 absolute inset-0 bg-gradient-to-r from-green-500/50 to-transparent flex items-center justify-start pl-16 z-20 pointer-events-none transition-opacity duration-200">
-                <div class="bg-green-500 rounded-full p-4 sm:p-5 shadow-[0_0_40px_rgba(34,197,94,0.8)] scale-110">
-                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 13l4 4L19 7"></path></svg>
-                </div>
+            <!-- Indicadores swipe -->
+            <div class="fy-swipe-indicator" id="fy-like-ind">
+                <svg width="32" height="32" fill="white" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
             </div>
-            
-            <div id="swipe-left-overlay" class="opacity-0 absolute inset-0 bg-gradient-to-l from-red-500/50 to-transparent flex items-center justify-end pr-16 z-20 pointer-events-none transition-opacity duration-200">
-                <div class="bg-red-500 rounded-full p-4 sm:p-5 shadow-[0_0_40px_rgba(239,68,68,0.8)] scale-110">
-                    <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </div>
+            <div class="fy-swipe-indicator" id="fy-nope-ind">
+                <svg width="32" height="32" fill="white" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" stroke="white" stroke-width="3" stroke-linecap="round"/></svg>
             </div>
 
-            <!-- Img layers -->
-            <img id="track-front" src="" class="w-full h-full object-contain absolute inset-0 z-10 drop-shadow-[0_10px_30px_rgba(0,0,0,0.7)] pointer-events-none transition-opacity duration-300" draggable="false">
-            <img id="track-bg" src="" class="w-full h-full object-cover absolute inset-0 opacity-40 blur-2xl pointer-events-none transition-opacity duration-300 transform scale-105" draggable="false">
-
-            <!-- Data overlay -->
-            <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/95 via-black/70 to-transparent p-6 sm:p-10 pt-32 z-10 flex justify-between items-end">
-                <div class="text-left w-3/4 pointer-events-none">
-                    <h2 id="t-name" class="text-3xl sm:text-5xl font-black truncate text-white drop-shadow-xl tracking-tight"></h2>
-                    <p id="t-artist" class="text-xl sm:text-3xl text-green-400 font-bold truncate mt-2 drop-shadow-md"></p>
-                    <p id="t-album" class="text-sm sm:text-lg text-gray-300 mt-2 truncate font-medium"></p>
-                </div>
-                
-                <div class="relative w-14 h-14 sm:w-20 sm:h-20 flex items-center justify-center shrink-0">
-                    <svg class="w-full h-full transform -rotate-90 pointer-events-none drop-shadow-lg" viewBox="0 0 36 36">
-                        <path class="text-gray-600/60" stroke-width="3" stroke="currentColor" fill="none" stroke-linecap="round" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                        <path id="t-progress" class="text-green-500 transition-none" stroke-width="3" stroke-linecap="round" stroke-dasharray="100, 100" stroke-dashoffset="100" stroke="currentColor" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                    </svg>
-                    <span id="t-time" class="absolute text-sm sm:text-base font-black text-white shadow-sm drop-shadow-md">30</span>
-                </div>
-            </div>
-
-            <div id="play-overlay" class="absolute inset-0 z-20 bg-black/60 flex items-center justify-center pointer-events-none hidden transition-opacity duration-300">
-                <div class="bg-white/10 p-6 sm:p-8 rounded-full backdrop-blur-md shadow-2xl border border-white/20">
-                    <svg class="w-16 h-16 sm:w-24 sm:h-24 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"></path></svg>
+            <!-- Overlay: primera interacción para audio -->
+            <div id="fy-play-overlay">
+                <div class="fy-play-btn-big">
+                    <svg width="36" height="36" fill="white" viewBox="0 0 24 24"><path d="M5 3l14 9-14 9V3z"/></svg>
                 </div>
             </div>
         </div>
+
+        <!-- Info -->
+        <div id="fy-info">
+            <div id="fy-title">—</div>
+            <div id="fy-artist">—</div>
+            <div id="fy-album">—</div>
+        </div>
+
+        <!-- Progreso -->
+        <div id="fy-progress-wrap">
+            <div id="fy-progress-bar"></div>
+        </div>
+        <div id="fy-times">
+            <span id="fy-elapsed">0:00</span>
+            <span id="fy-remaining">0:30</span>
+        </div>
+
+        <!-- Volumen -->
+        <div id="fy-volume-row">
+            <i class="fa-solid fa-volume-low" id="fy-vol-icon"></i>
+            <input type="range" id="fy-vol-slider" min="0" max="1" step="0.02" value="0.8">
+        </div>
+
+        <!-- Botones -->
+        <div id="fy-actions">
+            <button class="fy-btn" id="btn-nope" title="No me gusta">
+                <svg width="26" height="26" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <button class="fy-btn" id="btn-like" title="Me gusta">
+                <svg width="30" height="30" fill="white" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+            </button>
+            <button class="fy-btn" id="btn-skip" title="Siguiente">
+                <svg width="22" height="22" fill="currentColor" viewBox="0 0 24 24"><path d="M5.51 3.12A.5.5 0 0 0 5 3.5v17a.5.5 0 0 0 .77.42L18 13.42a.5.5 0 0 0 0-.84L5.77 3.12zM19 3h2v18h-2z"/></svg>
+            </button>
+        </div>
     </div>
 
-    <div id="manual-controls" class="hidden absolute bottom-6 w-full flex justify-center gap-10 sm:gap-16 z-50 pointer-events-none px-6 pb-safe">
-        <button id="btn-left" class="pointer-events-auto bg-gray-900 border-2 border-gray-800 hover:border-red-500/80 hover:bg-gray-800 text-red-500 rounded-full p-4 sm:p-5 transition-all duration-200 active:scale-90 shadow-[0_10px_30px_rgba(239,68,68,0.2)] flex items-center justify-center group outline-none">
-            <svg class="w-8 h-8 sm:w-12 sm:h-12 transform group-active:-scale-x-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path></svg>
-        </button>
-        <button id="btn-right" class="pointer-events-auto bg-gray-900 border-2 border-gray-800 hover:border-green-500/80 hover:bg-gray-800 text-green-500 rounded-full p-4 sm:p-5 transition-all duration-200 active:scale-90 shadow-[0_10px_30px_rgba(34,197,94,0.2)] flex items-center justify-center group outline-none">
-            <svg class="w-8 h-8 sm:w-12 sm:h-12 transform group-active:scale-x-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
-        </button>
-    </div>
-
-    <audio id="audio-player"></audio>
+    <audio id="fy-audio"></audio>
 </div>
 @endsection
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', () => {
-        let currentTrack = null;
-        let playQueue = [];
-        let isPreloading = false;
-        let isDragging = false;
-        let isAnimating = false; // Bloquea iteraciones múltiples
-        let startX = 0;
-        let offsetX = 0;
-        const swipeThreshold = window.innerWidth > 600 ? 150 : 100;
-        let initialInteracted = false;
+document.addEventListener('DOMContentLoaded', () => {
 
-        const ui = {
-            container: document.getElementById('foryou-container'),
-            loading: document.getElementById('loading-state'),
-            error: document.getElementById('error-state'),
-            card: document.getElementById('track-card'),
-            controls: document.getElementById('manual-controls'),
-            bgBlur: document.getElementById('background-blur'),
-            bgImg: document.getElementById('bg-img'),
-            trackFront: document.getElementById('track-front'),
-            trackBg: document.getElementById('track-bg'),
-            name: document.getElementById('t-name'),
-            artist: document.getElementById('t-artist'),
-            album: document.getElementById('t-album'),
-            progress: document.getElementById('t-progress'),
-            timeLabel: document.getElementById('t-time'),
-            playOverlay: document.getElementById('play-overlay'),
-            swipeRightOverlay: document.getElementById('swipe-right-overlay'),
-            swipeLeftOverlay: document.getElementById('swipe-left-overlay'),
-            audio: document.getElementById('audio-player'),
-            btnLeft: document.getElementById('btn-left'),
-            btnRight: document.getElementById('btn-right')
-        };
+    /* ── Elementos UI ── */
+    const el = {
+        bg: document.getElementById('fy-bg'),
+        card: document.getElementById('fy-card'),
+        loading: document.getElementById('fy-loading'),
+        error: document.getElementById('fy-error'),
+        cover: document.getElementById('fy-cover'),
+        title: document.getElementById('fy-title'),
+        artist: document.getElementById('fy-artist'),
+        album: document.getElementById('fy-album'),
+        progressBar: document.getElementById('fy-progress-bar'),
+        elapsed: document.getElementById('fy-elapsed'),
+        remaining: document.getElementById('fy-remaining'),
+        volSlider: document.getElementById('fy-vol-slider'),
+        volIcon: document.getElementById('fy-vol-icon'),
+        playOverlay: document.getElementById('fy-play-overlay'),
+        likeInd: document.getElementById('fy-like-ind'),
+        nopeInd: document.getElementById('fy-nope-ind'),
+        audio: document.getElementById('fy-audio'),
+        btnNope: document.getElementById('btn-nope'),
+        btnLike: document.getElementById('btn-like'),
+        btnSkip: document.getElementById('btn-skip'),
+    };
 
-        // 1. Motor de Pre-carga
-        async function fetchNextTrack() {
-            if(isPreloading || playQueue.length > 2) return;
-            isPreloading = true;
-            try {
-                // Informar al backend de las canciones que ya tenemos en memoria
-                let excludeIds = [currentTrack?.id, ...playQueue.map(t => t.id)].filter(Boolean);
-                const res = await fetch('/api/for-you/next?exclude=' + excludeIds.join(','));
-                const track = await res.json();
-                if (track && !track.error && track.id) {
-                    playQueue.push(track);
-                    // Si hemos conseguido uno nuevo, intentamos pescar otro tras un momento
-                    setTimeout(() => fetchNextTrack(), 500); 
-                }
-            } catch (e) {
-                console.error("Fallo pre-cargando: ", e);
-            } finally {
-                isPreloading = false;
-            }
-        }
+    /* ── Estado ── */
+    let currentTrack = null;
+    let queue = [];
+    let isPreloading = false;
+    let isAnimating = false;
+    let isDragging = false;
+    let startX = 0;
+    let offsetX = 0;
+    let audioUnlocked = false;
+    const SWIPE_THRESHOLD = 110;
 
-        // Configuración inicial de colas
-        async function initFlow() {
-            ui.error.classList.add('hidden');
-            ui.card.classList.add('hidden');
-            ui.controls.classList.add('hidden');
-            ui.loading.classList.remove('hidden');
-            
-            await fetchNextTrack(); 
-            
-            if (playQueue.length > 0) {
-                playNextFromQueue();
-            } else {
-                showError();
-            }
-        }
+    /* ── Helpers de tiempo ── */
+    const fmt = (s) => `${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
 
-        function playNextFromQueue() {
-            if (playQueue.length === 0) {
-                // Cola vacía, mostramos loading corto
-                ui.card.classList.add('hidden');
-                ui.loading.classList.remove('hidden');
-                // Intentamos forzar carga rápida
-                fetchNextTrack().then(() => {
-                    if(playQueue.length > 0) playNextFromQueue();
-                    else showError();
-                });
-                return;
-            }
-
-            currentTrack = playQueue.shift();
-            renderTrack(currentTrack);
-            
-            // Reposita la cola en el background
-            fetchNextTrack(); 
-        }
-
-        function renderTrack(track) {
-            ui.loading.classList.add('hidden');
-            ui.error.classList.add('hidden');
-            ui.card.classList.remove('hidden');
-            ui.controls.classList.remove('hidden');
-            ui.bgBlur.classList.remove('hidden');
-
-            const imgUrl = track.album?.images[0]?.url || '';
-            ui.bgImg.src = imgUrl;
-            ui.trackFront.src = imgUrl;
-            ui.trackBg.src = imgUrl;
-
-            ui.name.textContent = track.name;
-            ui.artist.textContent = (track.artists || []).map(a => a.name).join(', ');
-            ui.album.textContent = track.album?.name || '';
-
-            // Reiniciar Transformaciones visuales
-            ui.card.style.transition = 'none';
-            ui.card.style.transform = `translateX(0px) rotate(0deg)`;
-            ui.swipeLeftOverlay.style.opacity = 0;
-            ui.swipeRightOverlay.style.opacity = 0;
-
-            // Motor de Audio Autoplay
-            ui.audio.pause();
-            if (track.preview_url) {
-                ui.audio.src = track.preview_url;
-                ui.audio.load();
-                
-                // Si el usuario ya tocó la pantalla antes, los navegadores permiten Autoplay sin problemas
-                const playPromise = ui.audio.play();
-                
-                if (playPromise !== undefined) {
-                    playPromise.then(() => {
-                        ui.playOverlay.classList.add('hidden');
-                    }).catch(err => {
-                        console.warn('Autoplay interceptado. Solicitando interacción inicial.');
-                        ui.playOverlay.classList.remove('hidden');
-                    });
-                }
-            } else {
-                ui.audio.src = '';
-                ui.timeLabel.textContent = '0';
-                ui.progress.style.strokeDashoffset = '100';
-            }
-            isAnimating = false; // Listo para swipar
-        }
-
-        function showError() {
-            ui.loading.classList.add('hidden');
-            ui.card.classList.add('hidden');
-            ui.controls.classList.add('hidden');
-            ui.error.classList.remove('hidden');
-        }
-
-        // CONTROL TÁCTIL Y DE RATÓN
-        function handleStart(e) {
-            if (isAnimating) return;
-            isDragging = true;
-            startX = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            ui.card.style.transition = 'none';
-        }
-
-        function handleMove(e) {
-            if (!isDragging) return;
-            // Prevenir scroll
-            if(e.type.includes('touch')) e.preventDefault(); 
-            
-            const x = e.type.includes('mouse') ? e.clientX : e.touches[0].clientX;
-            offsetX = x - startX;
-            // La rotación sutil acompaña al movimiento horizontal
-            ui.card.style.transform = `translateX(${offsetX}px) rotate(${offsetX/15}deg)`;
-            
-            ui.swipeRightOverlay.style.opacity = Math.max(0, Math.min(offsetX/120, 1));
-            ui.swipeLeftOverlay.style.opacity = Math.max(0, Math.min(-offsetX/120, 1));
-        }
-
-        function handleEnd(e) {
-            if (!isDragging) return;
-            isDragging = false;
-            ui.card.style.transition = 'transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-            
-            if (offsetX > swipeThreshold) {
-                commitSwipe('like', window.innerWidth);
-            } else if (offsetX < -swipeThreshold) {
-                commitSwipe('dislike', -window.innerWidth);
-            } else {
-                // Volver al centro
-                offsetX = 0;
-                ui.card.style.transform = `translateX(0px) rotate(0deg)`;
-                ui.swipeRightOverlay.style.opacity = 0;
-                ui.swipeLeftOverlay.style.opacity = 0;
-            }
-        }
-
-        // Ejecutar Swipe
-        function commitSwipe(action, endLocation) {
-            if (isAnimating) return;
-            isAnimating = true;
-            initialInteracted = true; // El usuario ya interactuó, el próximo autoplay es libre
-            ui.audio.pause();
-            
-            // Animación de salida brutal
-            ui.card.style.transition = 'transform 0.5s ease-out';
-            ui.card.style.transform = `translateX(${endLocation*1.5}px) rotate(${endLocation/10}deg)`;
-            
-            // Enviar a la BD en background
-            sendActionToDatabase(action);
-
-            // Transición instantánea (carga el siguiente inmediatamente de la cola)
-            setTimeout(() => {
-                playNextFromQueue();
-            }, 350); 
-        }
-
-        async function sendActionToDatabase(action) {
-            if(!currentTrack) return;
-            // Necesario para evitar CSRF 419 Mismatch
-            let token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-            try {
-                // Hacer el post sin esperar, para no bloquear el UI
-                fetch('/api/for-you/action', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token,
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        track_id: currentTrack.id,
-                        album_id: currentTrack.album?.id,
-                        action: action
-                    })
-                });
-            } catch(e) { console.error("Error guardando swipe: ", e); }
-        }
-
-        // EVENTOS DOM
-        ui.card.addEventListener('mousedown', handleStart);
-        window.addEventListener('mousemove', handleMove, {passive: false}); // Capturar fuera de la tarjeta
-        window.addEventListener('mouseup', handleEnd);
-        
-        ui.card.addEventListener('touchstart', handleStart, {passive: false});
-        window.addEventListener('touchmove', handleMove, {passive: false});
-        window.addEventListener('touchend', handleEnd);
-
-        ui.btnLeft.addEventListener('click', () => commitSwipe('dislike', -window.innerWidth));
-        ui.btnRight.addEventListener('click', () => commitSwipe('like', window.innerWidth));
-
-        // EVENTOS DE AUDIO Y PROGRESO
-        ui.audio.addEventListener('timeupdate', () => {
-            if(!ui.audio.duration) return;
-            const remaining = Math.max(0, Math.ceil(ui.audio.duration - ui.audio.currentTime)) || 0;
-            ui.timeLabel.textContent = remaining;
-            const percentage = (ui.audio.currentTime / ui.audio.duration);
-            ui.progress.style.strokeDashoffset = isNaN(percentage) ? 100 : 100 - (percentage * 100);
-        });
-
-        // Cuando la canción acabe, hace Swipe Automático (Autoplay infinite)
-        ui.audio.addEventListener('ended', () => commitSwipe('like', window.innerWidth));
-
-        // Primera interacción destraba el audio
-        document.body.addEventListener('click', () => {
-            if(!initialInteracted && ui.audio.paused && currentTrack?.preview_url) {
-                initialInteracted = true;
-                ui.playOverlay.classList.add('hidden');
-                ui.audio.play();
-            }
-        });
-
-        // Arranque
-        initFlow();
+    /* ── Volumen ── */
+    el.audio.volume = parseFloat(el.volSlider.value);
+    el.volSlider.addEventListener('input', () => {
+        el.audio.volume = parseFloat(el.volSlider.value);
+        updateVolIcon();
     });
+    el.volIcon.addEventListener('click', () => {
+        el.audio.muted = !el.audio.muted;
+        updateVolIcon();
+    });
+    function updateVolIcon() {
+        const v = el.audio.volume;
+        const muted = el.audio.muted;
+        el.volIcon.className = muted || v === 0
+            ? 'fa-solid fa-volume-xmark'
+            : v < 0.4 ? 'fa-solid fa-volume-low'
+            : 'fa-solid fa-volume-high';
+    }
+
+    /* ── Audio: progreso ── */
+    el.audio.addEventListener('timeupdate', () => {
+        if (!el.audio.duration) return;
+        const pct = el.audio.currentTime / el.audio.duration;
+        el.progressBar.style.width = (pct * 100) + '%';
+        el.elapsed.textContent = fmt(el.audio.currentTime);
+        el.remaining.textContent = fmt(el.audio.duration - el.audio.currentTime);
+    });
+    el.audio.addEventListener('ended', () => commitSwipe('like', window.innerWidth));
+
+    /* ── Pre-carga de canciones ── */
+    async function prefetch() {
+        if (isPreloading || queue.length >= 3) return;
+        isPreloading = true;
+        try {
+            const excludeIds = [currentTrack?.id, ...queue.map(t => t.id)].filter(Boolean);
+            const res = await fetch('/api/for-you/next?exclude=' + excludeIds.join(','));
+            const track = await res.json();
+            if (track && track.id && !track.error) {
+                queue.push(track);
+                setTimeout(prefetch, 400);
+            }
+        } catch(e) { console.error(e); }
+        finally { isPreloading = false; }
+    }
+
+    async function init() {
+        showState('loading');
+        await prefetch();
+        if (queue.length > 0) {
+            playNext();
+        } else {
+            showState('error');
+        }
+    }
+
+    function playNext() {
+        if (queue.length === 0) {
+            showState('loading');
+            prefetch().then(() => queue.length ? playNext() : showState('error'));
+            return;
+        }
+        currentTrack = queue.shift();
+        renderTrack(currentTrack);
+        prefetch();
+    }
+
+    function renderTrack(track) {
+        showState('card');
+
+        const img = track.album?.images?.[0]?.url || '';
+        el.cover.src = img;
+        el.bg.style.backgroundImage = img ? `url('${img}')` : '';
+        el.title.textContent = track.name || '—';
+        el.artist.textContent = (track.artists || []).map(a => a.name).join(', ') || '—';
+        el.album.textContent = track.album?.name || '';
+
+        // Reset UI
+        el.progressBar.style.transition = 'none';
+        el.progressBar.style.width = '0%';
+        el.elapsed.textContent = '0:00';
+        el.remaining.textContent = '0:30';
+        el.card.style.transition = 'none';
+        el.card.style.transform = 'translateX(0) rotate(0deg)';
+        el.likeInd.style.opacity = 0;
+        el.nopeInd.style.opacity = 0;
+
+        // Audio
+        el.audio.pause();
+        el.audio.src = track.preview_url || '';
+        el.audio.load();
+
+        if (track.preview_url) {
+            const p = el.audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    el.playOverlay.classList.add('hidden');
+                    audioUnlocked = true;
+                    setTimeout(() => {
+                        el.progressBar.style.transition = 'width 0.5s linear';
+                    }, 100);
+                }).catch(() => {
+                    el.playOverlay.classList.remove('hidden');
+                });
+            }
+        }
+
+        isAnimating = false;
+    }
+
+    /* ── Swipe ── */
+    function handleStart(e) {
+        if (isAnimating) return;
+        isDragging = true;
+        startX = e.type.startsWith('mouse') ? e.clientX : e.touches[0].clientX;
+        el.card.style.transition = 'none';
+    }
+
+    function handleMove(e) {
+        if (!isDragging) return;
+        if (e.type.startsWith('touch')) e.preventDefault();
+        const x = e.type.startsWith('mouse') ? e.clientX : e.touches[0].clientX;
+        offsetX = x - startX;
+        el.card.style.transform = `translateX(${offsetX}px) rotate(${offsetX/18}deg)`;
+        const norm = Math.min(Math.abs(offsetX) / SWIPE_THRESHOLD, 1);
+        el.likeInd.style.opacity = offsetX > 0 ? norm : 0;
+        el.likeInd.style.transform = `translateY(-50%) scale(${0.7 + 0.3*norm})`;
+        el.nopeInd.style.opacity = offsetX < 0 ? norm : 0;
+        el.nopeInd.style.transform = `translateY(-50%) scale(${0.7 + 0.3*norm})`;
+    }
+
+    function handleEnd() {
+        if (!isDragging) return;
+        isDragging = false;
+        el.card.style.transition = 'transform 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        if (offsetX > SWIPE_THRESHOLD) {
+            commitSwipe('like', window.innerWidth * 1.5);
+        } else if (offsetX < -SWIPE_THRESHOLD) {
+            commitSwipe('dislike', -window.innerWidth * 1.5);
+        } else {
+            el.card.style.transform = 'translateX(0) rotate(0deg)';
+            el.likeInd.style.opacity = 0;
+            el.nopeInd.style.opacity = 0;
+        }
+    }
+
+    function commitSwipe(action, endX) {
+        if (isAnimating) return;
+        isAnimating = true;
+        audioUnlocked = true;
+        el.audio.pause();
+        el.card.style.transition = 'transform 0.45s ease-out, opacity 0.3s ease';
+        el.card.style.transform = `translateX(${endX}px) rotate(${endX/14}deg)`;
+        el.card.style.opacity = '0';
+        sendAction(action);
+        setTimeout(() => {
+            el.card.style.opacity = '1';
+            playNext();
+        }, 380);
+    }
+
+    async function sendAction(action) {
+        if (!currentTrack) return;
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.content || '';
+        try {
+            fetch('/api/for-you/action', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    track_id: currentTrack.id,
+                    album_id: currentTrack.album?.id,
+                    action
+                })
+            });
+        } catch(e) {}
+    }
+
+    /* ── Botones ── */
+    el.btnLike.addEventListener('click', () => commitSwipe('like', window.innerWidth * 1.5));
+    el.btnNope.addEventListener('click', () => commitSwipe('dislike', -window.innerWidth * 1.5));
+    el.btnSkip.addEventListener('click', () => commitSwipe('like', window.innerWidth * 1.5));
+
+    /* ── Eventos táctiles y ratón ── */
+    el.card.addEventListener('mousedown', handleStart);
+    window.addEventListener('mousemove', handleMove, { passive: false });
+    window.addEventListener('mouseup', handleEnd);
+    el.card.addEventListener('touchstart', handleStart, { passive: false });
+    window.addEventListener('touchmove', handleMove, { passive: false });
+    window.addEventListener('touchend', handleEnd);
+
+    /* ── Desbloquear audio en primer clic ── */
+    document.body.addEventListener('click', () => {
+        if (!audioUnlocked && currentTrack?.preview_url) {
+            audioUnlocked = true;
+            el.audio.play().then(() => el.playOverlay.classList.add('hidden')).catch(() => {});
+        }
+    }, { once: false });
+
+    /* ── Toggle estados ── */
+    function showState(state) {
+        el.loading.style.display = state === 'loading' ? 'flex' : 'none';
+        el.error.style.display   = state === 'error'   ? 'flex' : 'none';
+        el.card.classList.toggle('hidden', state !== 'card');
+    }
+
+    /* ── Arranque ── */
+    init();
+    // Asegurar que la altura del contenedor no incluya el footer
+    document.getElementById('foryou-wrap').style.height =
+        (window.innerHeight - (document.getElementById('foryou-wrap').offsetTop)) + 'px';
+    window.addEventListener('resize', () => {
+        document.getElementById('foryou-wrap').style.height =
+            (window.innerHeight - (document.getElementById('foryou-wrap').offsetTop)) + 'px';
+    });
+});
 </script>
 @endpush
