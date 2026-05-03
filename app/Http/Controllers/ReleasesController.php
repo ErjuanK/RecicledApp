@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Services\SpotifyService;
+use App\Services\EditorialApiService;
 use App\Models\UserLike;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -10,21 +11,22 @@ use Illuminate\Support\Facades\Auth;
 class ReleasesController extends Controller
 {
     private SpotifyService $spotify;
+    private EditorialApiService $editorial;
 
-    public function __construct(SpotifyService $spotify)
+    public function __construct(SpotifyService $spotify, EditorialApiService $editorial)
     {
         $this->spotify = $spotify;
+        $this->editorial = $editorial;
     }
 
     public function index()
     {
-        // 1. Get global new releases
-        $globalReleases = $this->spotify->getNewReleases(15, 'ES');
-
+        $currentYear = date('Y');
+        
         $personalizedReleases = [];
         $likedArtistsNames = [];
 
-        // 2. If authenticated, fetch likes and try to get personalized releases
+        // 1. If authenticated, fetch likes and try to get personalized releases
         if (Auth::check()) {
             $userLikes = UserLike::where('user_id', Auth::id())->inRandomOrder()->get();
             
@@ -52,9 +54,9 @@ class ReleasesController extends Controller
                     }
                     
                     foreach ($albums as $album) {
-                        // Avoid duplicates
+                        // Avoid duplicates and filter by current year
                         $exists = array_filter($personalizedReleases, fn($r) => $r['id'] === $album['id']);
-                        if (!$exists) {
+                        if (!$exists && str_starts_with($album['release_date'] ?? '', (string)$currentYear)) {
                             $personalizedReleases[] = $album;
                         }
                     }
@@ -62,6 +64,12 @@ class ReleasesController extends Controller
             }
         }
 
-        return view('releases.index', compact('globalReleases', 'personalizedReleases', 'likedArtistsNames'));
+        // Get Upcoming Releases
+        $upcomingReleases = $this->editorial->getUpcomingReleases();
+
+        // Get Recent Editorial Releases
+        $recentEditorialReleases = $this->editorial->getRecentEditorialReleases();
+
+        return view('releases.index', compact('personalizedReleases', 'likedArtistsNames', 'upcomingReleases', 'recentEditorialReleases'));
     }
 }
