@@ -165,7 +165,7 @@
     </header>
     <div class="navegacion">
         <nav>
-            <a href="#">LANZAMIENTOS</a>
+            <a href="{{ route('releases.index') }}">LANZAMIENTOS</a>
             <a href="{{ url('/discovery') }}">DESCUBRIMIENTOS</a>
             <a href="{{ url('/for-you') }}">PARA TI</a>
             @auth

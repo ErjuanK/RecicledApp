@@ -91,6 +91,9 @@ Route::get('/discovery/genres', [\App\Http\Controllers\DiscoveryController::clas
 Route::get('/discovery/search', [\App\Http\Controllers\DiscoveryController::class, 'searchSpotify'])->name('discovery.search');
 Route::post('/discovery/generate', [\App\Http\Controllers\DiscoveryController::class, 'generateDashboard'])->name('discovery.generate');
 
+// Lanzamientos
+Route::get('/lanzamientos', [\App\Http\Controllers\ReleasesController::class, 'index'])->name('releases.index');
+
 // For You (TikTok style discovery)
 Route::middleware(['auth'])->group(function () {
     Route::get('/for-you', [\App\Http\Controllers\ForYouController::class, 'index'])->name('foryou');

@@ -165,7 +165,7 @@
     </header>
     <div class="navegacion">
         <nav>
-            <a href="#">LANZAMIENTOS</a>
+            <a href="<?php echo e(route('releases.index')); ?>">LANZAMIENTOS</a>
             <a href="<?php echo e(url('/discovery')); ?>">DESCUBRIMIENTOS</a>
             <a href="<?php echo e(url('/for-you')); ?>">PARA TI</a>
             <?php if(auth()->guard()->check()): ?>
