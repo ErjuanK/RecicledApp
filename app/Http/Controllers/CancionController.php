@@ -189,6 +189,9 @@ class CancionController extends Controller
             
             return view('cancion', compact('cancion'));
         } else {
+            if (isset($trackData['error']) && $trackData['error'] === 'rate_limited') {
+                abort(429, 'Demasiadas peticiones a la API de Spotify. Por favor, inténtalo de nuevo en unos minutos.');
+            }
             abort(404, 'Canción no encontrada');
         }
     }

@@ -118,6 +118,10 @@ class AlbumController extends Controller
             return view('album', compact('album'));
         }
 
+        if (isset($albumData['error']) && $albumData['error'] === 'rate_limited') {
+            abort(429, 'Demasiadas peticiones a la API de Spotify. Por favor, inténtalo de nuevo en unos minutos.');
+        }
+
         abort(404, 'Álbum no encontrado');
     }
 }

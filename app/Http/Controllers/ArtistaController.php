@@ -177,6 +177,9 @@ class ArtistaController extends Controller
             return view('artista', compact('artista'));
             
         } else {
+            if (isset($artistData['error']) && $artistData['error'] === 'rate_limited') {
+                abort(429, 'Demasiadas peticiones a la API de Spotify. Por favor, inténtalo de nuevo en unos minutos.');
+            }
             abort(404, 'Artista no encontrado');
         }
     }
