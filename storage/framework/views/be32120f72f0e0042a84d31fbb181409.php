@@ -57,7 +57,7 @@
                     $featuredEditorial = array_shift($recentEditorialReleases);
                 ?>
 
-                <a href="#" class="genius-hero" style="text-decoration: none; color: inherit; display: flex;">
+                <a href="<?php echo e(url('/album/' . ($featuredEditorial['spotify_id'] ?? ''))); ?>" class="genius-hero" style="text-decoration: none; color: inherit; display: flex;">
                     <div class="genius-hero-text">
                         <span class="genius-tag">RESEÑA • <?php echo e(strtoupper($featuredEditorial['type'])); ?></span>
                         <h2><?php echo e($featuredEditorial['description']); ?></h2>
@@ -74,7 +74,7 @@
 
                 <div class="genius-grid">
                     <?php $__currentLoopData = $recentEditorialReleases; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $review): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <a href="#" class="genius-card" style="text-decoration: none; color: inherit;">
+                        <a href="<?php echo e(url('/album/' . ($review['spotify_id'] ?? ''))); ?>" class="genius-card" style="text-decoration: none; color: inherit;">
                             <div class="genius-card-text">
                                 <span class="genius-tag"><?php echo e(strtoupper($review['type'])); ?></span>
                                 <h3><?php echo e($review['description']); ?></h3>

@@ -86,12 +86,12 @@ class ArtistaController extends Controller
         // Determinar si es ID o búsqueda por texto
         if (preg_match('/^[a-zA-Z0-9]{22}$/', $id)) {
             $artistData = $this->spotify->getArtist($id);
-        }
-        
-        // Fallback or search if not found/valid ID
-        if (!$artistData || isset($artistData['error'])) {
+        } else {
+            // Es una búsqueda por texto
             $artistData = $this->spotify->searchArtist($id);
-            if ($artistData && !isset($artistData['error'])) $id = $artistData['id'];
+            if ($artistData && !isset($artistData['error'])) {
+                $id = $artistData['id'];
+            }
         }
         
         if ($artistData && !isset($artistData['error'])) {

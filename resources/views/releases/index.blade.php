@@ -59,7 +59,7 @@
                     $featuredEditorial = array_shift($recentEditorialReleases);
                 @endphp
 
-                <a href="#" class="genius-hero" style="text-decoration: none; color: inherit; display: flex;">
+                <a href="{{ url('/album/' . ($featuredEditorial['spotify_id'] ?? '')) }}" class="genius-hero" style="text-decoration: none; color: inherit; display: flex;">
                     <div class="genius-hero-text">
                         <span class="genius-tag">RESEÑA • {{ strtoupper($featuredEditorial['type']) }}</span>
                         <h2>{{ $featuredEditorial['description'] }}</h2>
@@ -76,7 +76,7 @@
 
                 <div class="genius-grid">
                     @foreach($recentEditorialReleases as $review)
-                        <a href="#" class="genius-card" style="text-decoration: none; color: inherit;">
+                        <a href="{{ url('/album/' . ($review['spotify_id'] ?? '')) }}" class="genius-card" style="text-decoration: none; color: inherit;">
                             <div class="genius-card-text">
                                 <span class="genius-tag">{{ strtoupper($review['type']) }}</span>
                                 <h3>{{ $review['description'] }}</h3>

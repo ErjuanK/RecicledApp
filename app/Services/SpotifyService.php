@@ -85,12 +85,26 @@ class SpotifyService {
     }
 
     public function searchArtist($name) {
-        return Cache::remember('spotify.search.' . md5($name), 86400, function () use ($name) {
-            $query = urlencode($name);
-            $url = "https://api.spotify.com/v1/search?q={$query}&type=artist&limit=1";
-            $result = $this->request($url);
-            return $result['artists']['items'][0] ?? null;
-        });
+        $cacheKey = 'spotify.search.' . md5($name);
+        if (Cache::has($cacheKey)) {
+            $data = Cache::get($cacheKey);
+            if (!isset($data['error'])) return $data;
+            Cache::forget($cacheKey);
+        }
+
+        $query = urlencode($name);
+        $url = "https://api.spotify.com/v1/search?q={$query}&type=artist&limit=1";
+        $result = $this->request($url);
+        
+        if ($result && !isset($result['error'])) {
+            $artist = $result['artists']['items'][0] ?? null;
+            if ($artist) {
+                Cache::put($cacheKey, $artist, 86400);
+            }
+            return $artist;
+        }
+        
+        return $result; // Returns error array or null
     }
 
     public function getArtistTopTracks($artistId, $market = 'ES') {
@@ -128,10 +142,21 @@ class SpotifyService {
     }
 
     public function getArtist($artistId) {
-        return Cache::remember("spotify.artist.{$artistId}", 86400, function () use ($artistId) {
-            $url = "https://api.spotify.com/v1/artists/{$artistId}";
-            return $this->request($url);
-        });
+        $cacheKey = "spotify.artist.{$artistId}";
+        if (Cache::has($cacheKey)) {
+            $data = Cache::get($cacheKey);
+            if (!isset($data['error'])) return $data;
+            Cache::forget($cacheKey);
+        }
+
+        $url = "https://api.spotify.com/v1/artists/{$artistId}";
+        $result = $this->request($url);
+
+        if ($result && !isset($result['error'])) {
+            Cache::put($cacheKey, $result, 86400);
+        }
+        
+        return $result;
     }
 
     public function getAccessToken() {
