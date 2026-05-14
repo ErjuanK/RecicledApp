@@ -132,13 +132,17 @@ class SpotifyService {
     }
 
     public function getAlbum($albumId) {
-        $url = "https://api.spotify.com/v1/albums/{$albumId}";
-        return $this->request($url);
+        return Cache::remember("spotify.album.{$albumId}", 86400, function () use ($albumId) {
+            $url = "https://api.spotify.com/v1/albums/{$albumId}";
+            return $this->request($url);
+        });
     }
 
     public function getTrack($trackId) {
-        $url = "https://api.spotify.com/v1/tracks/{$trackId}";
-        return $this->request($url);
+        return Cache::remember("spotify.track.{$trackId}", 86400, function () use ($trackId) {
+            $url = "https://api.spotify.com/v1/tracks/{$trackId}";
+            return $this->request($url);
+        });
     }
 
     public function getArtist($artistId) {
@@ -192,20 +196,26 @@ class SpotifyService {
      * Search for tracks by genre + keyword.
      */
     public function searchTracks(string $query, int $limit = 20): array {
-        $encoded = urlencode($query);
-        $url = "https://api.spotify.com/v1/search?q={$encoded}&type=track&limit={$limit}&market=ES";
-        $result = $this->request($url);
-        return $result['tracks']['items'] ?? [];
+        $cacheKey = "spotify.search.tracks." . md5($query . $limit);
+        return Cache::remember($cacheKey, 86400, function () use ($query, $limit) {
+            $encoded = urlencode($query);
+            $url = "https://api.spotify.com/v1/search?q={$encoded}&type=track&limit={$limit}&market=ES";
+            $result = $this->request($url);
+            return $result['tracks']['items'] ?? [];
+        });
     }
 
     /**
      * Search for albums by genre + keyword.
      */
     public function searchAlbums(string $query, int $limit = 10): array {
-        $encoded = urlencode($query);
-        $url = "https://api.spotify.com/v1/search?q={$encoded}&type=album&limit={$limit}&market=ES";
-        $result = $this->request($url);
-        return $result['albums']['items'] ?? [];
+        $cacheKey = "spotify.search.albums." . md5($query . $limit);
+        return Cache::remember($cacheKey, 86400, function () use ($query, $limit) {
+            $encoded = urlencode($query);
+            $url = "https://api.spotify.com/v1/search?q={$encoded}&type=album&limit={$limit}&market=ES";
+            $result = $this->request($url);
+            return $result['albums']['items'] ?? [];
+        });
     }
 
     /**

@@ -2,35 +2,94 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SpotifyService;
+use App\Services\ItunesService;
+use App\Services\LastFmService;
 use App\Services\EditorialApiService;
 use App\Models\UserLike;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class ReleasesController extends Controller
 {
-    private SpotifyService $spotify;
+    private ItunesService $itunes;
+    private LastFmService $lastFm;
     private EditorialApiService $editorial;
 
-    public function __construct(SpotifyService $spotify, EditorialApiService $editorial)
+    public function __construct(ItunesService $itunes, LastFmService $lastFm, EditorialApiService $editorial)
     {
-        $this->spotify = $spotify;
+        $this->itunes   = $itunes;
+        $this->lastFm   = $lastFm;
         $this->editorial = $editorial;
     }
 
     public function index()
     {
-        $currentYear = date('Y');
-        
         $personalizedReleases = [];
-        $likedArtistsNames = [];
+        $likedArtistsNames    = [];
 
-        // 1. If authenticated, fetch likes and try to get personalized releases
+        // ── 1. Build personalised feed for logged-in users ──────────────────
         if (Auth::check()) {
-            $userLikes = UserLike::where('user_id', Auth::id())->inRandomOrder()->get();
-            
-            // Extract unique artist names from likes
+            $userId   = Auth::id();
+            $cacheKey = "releases.personalized.{$userId}";
+
+            // Cache per-user for 6 hours so it feels fresh but doesn't hammer APIs
+            $personalizedReleases = Cache::remember($cacheKey, 3600 * 6, function () use (&$likedArtistsNames) {
+
+                $userLikes = UserLike::where('user_id', Auth::id())->get();
+                $seen      = [];
+                $results   = [];
+
+                // Extract unique artist names from all liked items
+                foreach ($userLikes as $like) {
+                    if ($like->type === 'artist' && !empty($like->name)) {
+                        $likedArtistsNames[] = $like->name;
+                    } elseif (!empty($like->artist_name)) {
+                        $likedArtistsNames[] = $like->artist_name;
+                    }
+                }
+                $likedArtistsNames = array_unique($likedArtistsNames);
+
+                if (empty($likedArtistsNames)) return [];
+
+                // Pick up to 3 liked artists randomly as "seeds"
+                $seeds = array_slice(collect($likedArtistsNames)->shuffle()->toArray(), 0, 3);
+
+                foreach ($seeds as $seedArtist) {
+                    // A) Albums from the liked artist itself (any recent release)
+                    $directAlbums = $this->itunes->searchAlbums($seedArtist, 3);
+                    foreach ($directAlbums as $album) {
+                        $key = strtolower($album['name'] . '|' . ($album['artists'][0]['name'] ?? ''));
+                        if (!isset($seen[$key]) && count($results) < 8) {
+                            $seen[$key] = true;
+                            $album['reason'] = "Porque te gusta {$seedArtist}";
+                            $results[] = $album;
+                        }
+                    }
+
+                    // B) Find similar artists via Last.fm
+                    $similarArtists = $this->lastFm->getSimilarArtists($seedArtist, 4);
+
+                    foreach (array_slice($similarArtists, 0, 3) as $similarArtist) {
+                        if (count($results) >= 8) break 2;
+
+                        $similarAlbums = $this->itunes->searchAlbums($similarArtist, 2);
+                        foreach ($similarAlbums as $album) {
+                            $key = strtolower($album['name'] . '|' . ($album['artists'][0]['name'] ?? ''));
+                            if (!isset($seen[$key]) && count($results) < 8) {
+                                $seen[$key] = true;
+                                $album['reason'] = "Porque te gusta {$seedArtist}";
+                                $results[] = $album;
+                            }
+                        }
+                    }
+                }
+
+                return $results;
+            });
+
+            // Rebuild likedArtistsNames for the view subtitle (always fresh)
+            $userLikes = UserLike::where('user_id', $userId)->get();
             foreach ($userLikes as $like) {
                 if ($like->type === 'artist' && !empty($like->name)) {
                     $likedArtistsNames[] = $like->name;
@@ -38,38 +97,29 @@ class ReleasesController extends Controller
                     $likedArtistsNames[] = $like->artist_name;
                 }
             }
-            
             $likedArtistsNames = array_unique($likedArtistsNames);
-            
-            // Pick a couple of artists randomly to search for recent albums
-            if (count($likedArtistsNames) > 0) {
-                shuffle($likedArtistsNames);
-                $searchArtists = array_slice($likedArtistsNames, 0, 3);
-                
-                foreach ($searchArtists as $artistName) {
-                    // Search for albums by this artist, newest first ideally
-                    $albums = $this->spotify->searchAlbums($artistName . ' tag:new', 2);
-                    if (empty($albums)) {
-                        $albums = $this->spotify->searchAlbums($artistName, 2);
-                    }
-                    
-                    foreach ($albums as $album) {
-                        // Avoid duplicates and filter by current year
-                        $exists = array_filter($personalizedReleases, fn($r) => $r['id'] === $album['id']);
-                        if (!$exists && str_starts_with($album['release_date'] ?? '', (string)$currentYear)) {
-                            $personalizedReleases[] = $album;
-                        }
-                    }
-                }
-            }
         }
 
-        // Get Upcoming Releases
-        $upcomingReleases = $this->editorial->getUpcomingReleases();
-
-        // Get Recent Editorial Releases
+        // ── 2. Editorial section ─────────────────────────────────────────────
+        $upcomingReleases        = $this->editorial->getUpcomingReleases();
         $recentEditorialReleases = $this->editorial->getRecentEditorialReleases();
 
-        return view('releases.index', compact('personalizedReleases', 'likedArtistsNames', 'upcomingReleases', 'recentEditorialReleases'));
+        // Enrich with real iTunes covers (skip if already has cover_url from the weekly cache)
+        foreach ($recentEditorialReleases as &$release) {
+            if (empty($release['cover_url'])) {
+                $release['cover_url'] = $this->itunes->getCoverUrl(
+                    $release['itunes_artist'] ?? $release['artist'],
+                    $release['itunes_album']  ?? $release['title']
+                );
+            }
+        }
+        unset($release);
+
+        return view('releases.index', compact(
+            'personalizedReleases',
+            'likedArtistsNames',
+            'upcomingReleases',
+            'recentEditorialReleases'
+        ));
     }
 }

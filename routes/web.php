@@ -77,6 +77,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
 // Placeholder routes (to be implemented)
 Route::get('/cancion/{id}', [\App\Http\Controllers\CancionController::class, 'show'])->name('cancion.show');
+Route::get('/album/buscar/{artist}/{album}', [\App\Http\Controllers\AlbumController::class, 'showByItunes'])->name('album.itunes');
 Route::get('/album/{id}', [\App\Http\Controllers\AlbumController::class, 'show'])->name('album.show');
 
 // Search API

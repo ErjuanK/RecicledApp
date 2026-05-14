@@ -20,9 +20,13 @@
             <div class="detalles-album">
                 <h2 class="nombre-album">{{ $album->nombre }}</h2>
                 <h3 class="artista-album">
-                    <a href="{{ route('artista.show', $album->artista_id) }}" style="text-decoration: none; color: inherit;">
+                    @if($album->artista_id)
+                        <a href="{{ route('artista.show', $album->artista_id) }}" style="text-decoration: none; color: inherit;">
+                            {{ $album->artista }}
+                        </a>
+                    @else
                         {{ $album->artista }}
-                    </a>
+                    @endif
                 </h3>
                 
                 <p class="descripcion-album">
@@ -46,7 +50,12 @@
 
             <div class="lista-canciones">
                 @foreach($album->canciones as $index => $cancion)
+                @php $cancionIsLocal = is_numeric($cancion->id); @endphp
+                @if($cancionIsLocal)
                 <a href="{{ route('cancion.show', $cancion->id) }}" class="elemento-cancion" style="text-decoration:none; color:inherit;">
+                @else
+                <div class="elemento-cancion">
+                @endif
                     <span class="numero-cancion-lista">{{ $index + 1 }}</span>
                     <div class="info-cancion-lista">
                         <span class="titulo-cancion-lista">{{ $cancion->titulo }}</span>
@@ -54,7 +63,11 @@
                     </div>
                     <span class="duracion-cancion-lista">{{ $cancion->duracion }}</span>
                     <span class="opciones-cancion"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                @if($cancionIsLocal)
                 </a>
+                @else
+                </div>
+                @endif
                 @endforeach
             </div>
         </section>

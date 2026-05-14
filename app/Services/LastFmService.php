@@ -13,16 +13,11 @@ class LastFmService
 
     public function __construct()
     {
-        // Proveemos una clave pública por defecto en caso de no estar en el .env
         $this->apiKey = env('LASTFM_API_KEY', '4a9f5581a9cdf20a699f540ac52a95c9');
     }
 
     /**
      * Get track info including global playcount (scrobbles).
-     *
-     * @param string $artistName
-     * @param string $trackName
-     * @return int
      */
     public function getTrackPlaycount(string $artistName, string $trackName): int
     {
@@ -44,16 +39,112 @@ class LastFmService
                         return (int) $data['track']['playcount'];
                     }
                 }
-                
-                return 0; // Fallback si la canción no existe en Last.fm
+                return 0;
             } catch (\Exception $e) {
                 Log::error('LastFmService: Failed to get playcount', [
                     'artist' => $artistName,
                     'track'  => $trackName,
                     'error'  => $e->getMessage(),
                 ]);
-                return 0; // Fallback en caso de timeout
+                return 0;
             }
+        });
+    }
+
+    /**
+     * Get the top albums for a given genre/tag from Last.fm.
+     * Used for the weekly editorial feed.
+     *
+     * @param string $tag  e.g. 'pop', 'hip-hop', 'latin', 'indie'
+     * @param int    $limit
+     * @return array
+     */
+    public function getTagTopAlbums(string $tag, int $limit = 5): array
+    {
+        $cacheKey = "lastfm.tag.albums." . md5($tag . $limit);
+
+        return Cache::remember($cacheKey, 3600 * 6, function () use ($tag, $limit) {
+            try {
+                $response = Http::timeout(10)->get($this->baseUrl, [
+                    'method'  => 'tag.getTopAlbums',
+                    'tag'     => $tag,
+                    'api_key' => $this->apiKey,
+                    'limit'   => $limit,
+                    'format'  => 'json',
+                ]);
+
+                if ($response->successful()) {
+                    $albums = $response->json()['albums']['album'] ?? [];
+                    return array_map(fn($a) => [
+                        'title'  => $a['name'],
+                        'artist' => $a['artist']['name'],
+                    ], $albums);
+                }
+            } catch (\Exception $e) {
+                Log::error('LastFmService::getTagTopAlbums error: ' . $e->getMessage());
+            }
+            return [];
+        });
+    }
+
+    /**
+     * Get top albums across multiple genres to build a varied editorial feed.
+     * Fetches albums from latin, pop, hip-hop, indie and urban tags.
+     *
+     * @param int $perTag  How many albums to fetch per genre tag
+     * @return array       Flat list of ['title', 'artist'] arrays
+     */
+    public function getWeeklyEditorialPool(int $perTag = 3): array
+    {
+        $tags = ['latin', 'pop', 'hip-hop', 'indie', 'urban', 'r&b'];
+        $pool = [];
+        $seen = [];
+
+        foreach ($tags as $tag) {
+            $albums = $this->getTagTopAlbums($tag, $perTag);
+            foreach ($albums as $album) {
+                $key = strtolower($album['artist'] . '|' . $album['title']);
+                if (!isset($seen[$key])) {
+                    $seen[$key] = true;
+                    $pool[] = $album;
+                }
+            }
+        }
+
+        return $pool;
+    }
+
+    /**
+     * Get a list of similar artists for a given artist name from Last.fm.
+     * Used to power the personalized "Para Ti" discovery section.
+     *
+     * @param string $artistName
+     * @param int    $limit  Max number of similar artists to return
+     * @return array         List of artist name strings
+     */
+    public function getSimilarArtists(string $artistName, int $limit = 5): array
+    {
+        $cacheKey = "lastfm.similar." . md5(strtolower($artistName) . $limit);
+
+        return Cache::remember($cacheKey, 3600 * 24, function () use ($artistName, $limit) {
+            try {
+                $response = Http::timeout(8)->get($this->baseUrl, [
+                    'method'     => 'artist.getSimilar',
+                    'artist'     => $artistName,
+                    'api_key'    => $this->apiKey,
+                    'limit'      => $limit,
+                    'autocorrect'=> 1,
+                    'format'     => 'json',
+                ]);
+
+                if ($response->successful()) {
+                    $artists = $response->json()['similarartists']['artist'] ?? [];
+                    return array_column($artists, 'name');
+                }
+            } catch (\Exception $e) {
+                Log::error('LastFmService::getSimilarArtists error: ' . $e->getMessage());
+            }
+            return [];
         });
     }
 }

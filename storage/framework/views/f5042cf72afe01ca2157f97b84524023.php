@@ -20,10 +20,15 @@
             <div class="detalles-album">
                 <h2 class="nombre-album"><?php echo e($album->nombre); ?></h2>
                 <h3 class="artista-album">
-                    <a href="<?php echo e(route('artista.show', $album->artista_id)); ?>" style="text-decoration: none; color: inherit;">
+                    <?php if($album->artista_id): ?>
+                        <a href="<?php echo e(route('artista.show', $album->artista_id)); ?>" style="text-decoration: none; color: inherit;">
+                            <?php echo e($album->artista); ?>
+
+                        </a>
+                    <?php else: ?>
                         <?php echo e($album->artista); ?>
 
-                    </a>
+                    <?php endif; ?>
                 </h3>
                 
                 <p class="descripcion-album">
@@ -48,7 +53,12 @@
 
             <div class="lista-canciones">
                 <?php $__currentLoopData = $album->canciones; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $cancion): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <?php $cancionIsLocal = is_numeric($cancion->id); ?>
+                <?php if($cancionIsLocal): ?>
                 <a href="<?php echo e(route('cancion.show', $cancion->id)); ?>" class="elemento-cancion" style="text-decoration:none; color:inherit;">
+                <?php else: ?>
+                <div class="elemento-cancion">
+                <?php endif; ?>
                     <span class="numero-cancion-lista"><?php echo e($index + 1); ?></span>
                     <div class="info-cancion-lista">
                         <span class="titulo-cancion-lista"><?php echo e($cancion->titulo); ?></span>
@@ -56,7 +66,11 @@
                     </div>
                     <span class="duracion-cancion-lista"><?php echo e($cancion->duracion); ?></span>
                     <span class="opciones-cancion"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                <?php if($cancionIsLocal): ?>
                 </a>
+                <?php else: ?>
+                </div>
+                <?php endif; ?>
                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </section>
