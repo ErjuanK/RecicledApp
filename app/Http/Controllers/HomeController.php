@@ -3,17 +3,17 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Services\SpotifyService;
+use App\Services\ItunesService;
 use App\Services\LastFmService;
 
 class HomeController extends Controller
 {
-    protected $spotify;
+    protected $itunes;
     protected $lastfm;
 
-    public function __construct(SpotifyService $spotify, LastFmService $lastfm)
+    public function __construct(ItunesService $itunes, LastFmService $lastfm)
     {
-        $this->spotify = $spotify;
+        $this->itunes = $itunes;
         $this->lastfm = $lastfm;
     }
 
@@ -23,11 +23,11 @@ class HomeController extends Controller
         
         // 1. Fetch Top Tracks
         if ($genre) {
-            $tracksData = $this->spotify->searchTracks('genre:"' . $genre . '"', 20);
+            $tracksData = $this->itunes->searchTracks('genre:"' . $genre . '"', 20);
             $tracks = array_slice($tracksData, 0, 5);
         } else {
             // Utilizamos una búsqueda general de éxitos recientes de España si no hay género
-            $tracksData = $this->spotify->searchTracks('year:' . date('Y') . '', 20);
+            $tracksData = $this->itunes->searchTracks('year:' . date('Y') . '', 20);
             $tracks = array_slice($tracksData, 0, 5);
         }
 
@@ -71,7 +71,7 @@ class HomeController extends Controller
 
         // Fallback: Si no hay género seleccionado o no logramos extraer 3 álbumes del género
         if (count($albumsData) < 3) {
-            $albumsData = $this->spotify->getNewReleases(20, 'ES');
+            $albumsData = $this->itunes->getNewReleases(20, 'ES');
         }
         
         $albums = [];
@@ -80,7 +80,7 @@ class HomeController extends Controller
                 // Obtener géneros del artista
                 $artistId = $album['artists'][0]['id'] ?? null;
                 if ($artistId) {
-                    $artistData = $this->spotify->getArtist($artistId);
+                    $artistData = $this->itunes->getArtist($artistId);
                     $album['genres'] = $artistData['genres'] ?? [];
                 } else {
                     $album['genres'] = [];

@@ -55,10 +55,15 @@ class ReleasesController extends Controller
                 // Pick up to 3 liked artists randomly as "seeds"
                 $seeds = array_slice(collect($likedArtistsNames)->shuffle()->toArray(), 0, 3);
 
+                $currentYear = date('Y');
+
                 foreach ($seeds as $seedArtist) {
                     // A) Albums from the liked artist itself (any recent release)
-                    $directAlbums = $this->itunes->searchAlbums($seedArtist, 3);
+                    $directAlbums = $this->itunes->searchAlbums($seedArtist, 10);
                     foreach ($directAlbums as $album) {
+                        $releaseYear = substr($album['release_date'] ?? '', 0, 4);
+                        if ($releaseYear !== $currentYear) continue;
+
                         $key = strtolower($album['name'] . '|' . ($album['artists'][0]['name'] ?? ''));
                         if (!isset($seen[$key]) && count($results) < 8) {
                             $seen[$key] = true;
@@ -73,8 +78,11 @@ class ReleasesController extends Controller
                     foreach (array_slice($similarArtists, 0, 3) as $similarArtist) {
                         if (count($results) >= 8) break 2;
 
-                        $similarAlbums = $this->itunes->searchAlbums($similarArtist, 2);
+                        $similarAlbums = $this->itunes->searchAlbums($similarArtist, 8);
                         foreach ($similarAlbums as $album) {
+                            $releaseYear = substr($album['release_date'] ?? '', 0, 4);
+                            if ($releaseYear !== $currentYear) continue;
+
                             $key = strtolower($album['name'] . '|' . ($album['artists'][0]['name'] ?? ''));
                             if (!isset($seen[$key]) && count($results) < 8) {
                                 $seen[$key] = true;

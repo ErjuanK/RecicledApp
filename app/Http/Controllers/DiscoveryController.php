@@ -2,18 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\SpotifyService;
+use App\Services\ItunesService;
 use Illuminate\Http\Request;
 
 class DiscoveryController extends Controller
 {
-    private SpotifyService $spotify;
+    private ItunesService $itunes;
 
-    public function __construct()
+    public function __construct(ItunesService $itunes)
     {
-        $clientId = config('services.spotify.client_id');
-        $clientSecret = config('services.spotify.client_secret');
-        $this->spotify = new SpotifyService($clientId, $clientSecret);
+        $this->itunes = $itunes;
     }
 
     /**
@@ -56,7 +54,7 @@ class DiscoveryController extends Controller
     }
 
     /**
-     * Search Spotify for albums or tracks.
+     * Search iTunes for albums or tracks.
      * GET /discovery/search?q=query&type=album|track
      */
     public function searchSpotify(Request $request)
@@ -68,39 +66,11 @@ class DiscoveryController extends Controller
             return response()->json([]);
         }
 
-        $token = $this->spotify->getAccessToken();
-        if (!$token) {
-            return response()->json([], 500);
-        }
-
-        $encodedQuery = urlencode($query);
-        $limit = 8;
-        $url = "https://api.spotify.com/v1/search?q={$encodedQuery}&type={$type}&limit={$limit}&market=ES";
-
-        $ch = curl_init($url);
-        curl_setopt_array($ch, [
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_HTTPHEADER     => [
-                'Authorization: Bearer ' . $token,
-                'Content-Type: application/json',
-            ],
-            CURLOPT_SSL_VERIFYPEER => false,
-            CURLOPT_TIMEOUT        => 10,
-        ]);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-
-        if ($httpCode !== 200) {
-            return response()->json([], 500);
-        }
-
-        $data = json_decode($response, true);
         $results = [];
 
-        if ($type === 'album' && isset($data['albums']['items'])) {
-            foreach ($data['albums']['items'] as $album) {
+        if ($type === 'album') {
+            $albums = $this->itunes->searchAlbums($query, 8);
+            foreach ($albums as $album) {
                 $results[] = [
                     'id'     => $album['id'],
                     'name'   => $album['name'],
@@ -110,10 +80,11 @@ class DiscoveryController extends Controller
                     'url'    => $album['external_urls']['spotify'] ?? '#',
                 ];
             }
-        } elseif ($type === 'track' && isset($data['tracks']['items'])) {
-            foreach ($data['tracks']['items'] as $track) {
-                $minutes = floor($track['duration_ms'] / 60000);
-                $seconds = round(($track['duration_ms'] % 60000) / 1000);
+        } elseif ($type === 'track') {
+            $tracks = $this->itunes->searchTracks($query, 8);
+            foreach ($tracks as $track) {
+                $minutes = floor(($track['duration_ms'] ?? 0) / 60000);
+                $seconds = round((($track['duration_ms'] ?? 0) % 60000) / 1000);
                 $results[] = [
                     'id'       => $track['id'],
                     'name'     => $track['name'],
@@ -141,7 +112,7 @@ class DiscoveryController extends Controller
         $trackIds = $request->input('track_ids', []);
 
         try {
-            $recommendations = $this->spotify->getRecommendations($genres, $albumIds, $trackIds);
+            $recommendations = $this->itunes->getRecommendations($genres, $albumIds, $trackIds);
             return response()->json($recommendations);
         } catch (\Exception $e) {
             \Log::error('Discovery recommendations failed: ' . $e->getMessage());

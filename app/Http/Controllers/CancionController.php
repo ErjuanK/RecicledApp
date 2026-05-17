@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Services\ItunesService;
+
 class CancionController extends Controller
 {
-    private $spotify;
+    private $itunes;
     private $genius;
     
-    public function __construct()
+    public function __construct(ItunesService $itunes)
     {
-        $clientId = config('services.spotify.client_id');
-        $clientSecret = config('services.spotify.client_secret');
-        $this->spotify = new \App\Services\SpotifyService($clientId, $clientSecret);
+        $this->itunes = $itunes;
         $this->genius = new \App\Services\GeniusService();
     }
     
@@ -94,8 +94,8 @@ class CancionController extends Controller
             }
         }
 
-        // 2. Fallback to Spotify Logic
-        $trackData = $this->spotify->getTrack($id);
+        // 2. Fallback to iTunes Logic
+        $trackData = $this->itunes->getTrack($id);
         
         if ($trackData && !isset($trackData['error'])) {
             $minutes = floor($trackData['duration_ms'] / 60000);
@@ -164,7 +164,7 @@ class CancionController extends Controller
 
             // Build View Object
             $cancion = (object)[
-                'id' => $trackData['id'], // Spotify ID
+                'id' => $trackData['id'], // iTunes ID
                 'titulo' => $trackData['name'],
                 'portada_url' => $trackData['album']['images'][0]['url'] ?? asset('multimedia/img/default-song.jpg'),
                 'artista' => $trackData['artists'][0]['name'],
@@ -189,8 +189,8 @@ class CancionController extends Controller
             
             return view('cancion', compact('cancion'));
         } else {
-            if (isset($trackData['error']) && $trackData['error'] === 'rate_limited') {
-                abort(429, 'Demasiadas peticiones a la API de Spotify. Por favor, inténtalo de nuevo en unos minutos.');
+            if (isset($trackData['error'])) {
+                abort(404, 'Canción no encontrada o no disponible.');
             }
             abort(404, 'Canción no encontrada');
         }

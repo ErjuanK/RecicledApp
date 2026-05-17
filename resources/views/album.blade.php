@@ -34,7 +34,12 @@
                 </p>
 
                 <div class="acciones-album">
-                    <button class="boton-icono"><i class="fa-solid fa-heart"></i></button>
+                    @php
+                        $isLikedAlbum = isset($likedAlbums) && in_array($album->id, $likedAlbums);
+                    @endphp
+                    <button class="boton-icono" onclick="toggleLike(this, 'album', '{{ $album->id }}', '{{ addslashes($album->nombre) }}', '{{ addslashes($album->artista) }}', '{{ $album->portada_url }}', '')">
+                        <i class="fa-solid fa-heart" style="{{ $isLikedAlbum ? 'color: #a855f7;' : '' }}"></i>
+                    </button>
                     <button class="boton-icono"><i class="fa-solid fa-share"></i></button>
                 </div>
             </div>
@@ -62,7 +67,16 @@
                         <span class="artista-cancion-lista">{{ $cancion->artista }}</span>
                     </div>
                     <span class="duracion-cancion-lista">{{ $cancion->duracion }}</span>
-                    <span class="opciones-cancion"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                    
+                    @php
+                        $isLikedSong = isset($likedSongs) && in_array($cancion->id, $likedSongs);
+                    @endphp
+                    <span class="opciones-cancion" style="display: flex; gap: 15px; align-items: center;">
+                        <button onclick="event.preventDefault(); toggleLike(this, 'song', '{{ $cancion->id }}', '{{ addslashes($cancion->titulo) }}', '{{ addslashes($cancion->artista) }}', '{{ $album->portada_url }}', '')" style="background:none; border:none; cursor:pointer; padding:0;">
+                            <i class="fa-solid fa-heart" style="{{ $isLikedSong ? 'color: #a855f7;' : 'color: #999;' }}"></i>
+                        </button>
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </span>
                 @if($cancionIsLocal)
                 </a>
                 @else

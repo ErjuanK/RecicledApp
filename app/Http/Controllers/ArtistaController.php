@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
+use App\Services\ItunesService;
+
 class ArtistaController extends Controller
 {
-    private $spotify;
+    private $itunes;
     private $genius;
+    private $lastfm;
     
-    public function __construct()
+    public function __construct(ItunesService $itunes, \App\Services\LastFmService $lastfm)
     {
-        // Cargar servicios sin namespace completo (se ajustará después)
-        $clientId = config('services.spotify.client_id');
-        $clientSecret = config('services.spotify.client_secret');
-        $this->spotify = new \App\Services\SpotifyService($clientId, $clientSecret);
+        $this->itunes = $itunes;
+        $this->lastfm = $lastfm;
         $this->genius = new \App\Services\GeniusService();
     }
     
@@ -83,20 +84,20 @@ class ArtistaController extends Controller
         // 2. Fallback to Spotify Logic
         $artistData = null;
         
-        // Determinar si es ID o búsqueda por texto
-        if (preg_match('/^[a-zA-Z0-9]{22}$/', $id)) {
-            $artistData = $this->spotify->getArtist($id);
+        // Determinar si es ID numérico o búsqueda por texto
+        if (is_numeric($id)) {
+            $artistData = $this->itunes->getArtist($id);
         } else {
             // Es una búsqueda por texto
-            $artistData = $this->spotify->searchArtist($id);
+            $artistData = $this->itunes->searchArtist($id);
             if ($artistData && !isset($artistData['error'])) {
                 $id = $artistData['id'];
             }
         }
         
         if ($artistData && !isset($artistData['error'])) {
-            $topTracks = $this->spotify->getArtistTopTracks($artistData['id']);
-            $albums = $this->spotify->getArtistAlbums($artistData['id'], 8);
+            $topTracks = $this->itunes->getArtistTopTracks($artistData['id']);
+            $albums = $this->itunes->getArtistAlbums($artistData['id'], 8);
             
             // Construir objeto de vista optimizado
             $artista = (object)[
@@ -154,7 +155,7 @@ class ArtistaController extends Controller
             $albumsLimitados = array_slice($albums, 0, 3);
             
             foreach ($albumsLimitados as $album) {
-                $albumTracks = $this->spotify->getAlbumTracks($album['id']);
+                $albumTracks = $this->itunes->getAlbumTracks($album['id']);
                 
                 foreach ($albumTracks as $track) {
                     if (!isset($trackIds[$track['id']])) {
@@ -177,8 +178,8 @@ class ArtistaController extends Controller
             return view('artista', compact('artista'));
             
         } else {
-            if (isset($artistData['error']) && $artistData['error'] === 'rate_limited') {
-                abort(429, 'Demasiadas peticiones a la API de Spotify. Por favor, inténtalo de nuevo en unos minutos.');
+            if (isset($artistData['error'])) {
+                abort(404, 'Artista no encontrado o no disponible en este momento.');
             }
             abort(404, 'Artista no encontrado');
         }
@@ -187,18 +188,25 @@ class ArtistaController extends Controller
     private function generarBiografia($data)
     {
         $nombreArtista = $data['name'];
-        $geniusId = $this->genius->obtenerIdArtista($nombreArtista);
         
+        // Intentar obtener biografía rica desde Last.fm
+        $bio = $this->lastfm->getArtistBio($nombreArtista);
+        if ($bio && strlen($bio) > 50) {
+            return $bio;
+        }
+
+        // Fallback a Genius
+        $geniusId = $this->genius->obtenerIdArtista($nombreArtista);
         if ($geniusId) {
-            $bio = $this->genius->obtenerBiografia($geniusId);
-            if ($bio) {
-                return $bio;
+            $bioGenius = $this->genius->obtenerBiografia($geniusId);
+            if ($bioGenius) {
+                return $bioGenius;
             }
         }
         
         // Fallback
         return "Perfil oficial de {$data['name']} en nuestra plataforma. " . 
-               "Con {$data['followers']['total']} seguidores en Spotify, " . 
+               "Con " . number_format($data['followers']['total'] ?? 0) . " seguidores, " . 
                "se posiciona como uno de los artistas destacados del género " . 
                (isset($data['genres'][0]) ? ucwords($data['genres'][0]) : 'Musical') . ".";
     }

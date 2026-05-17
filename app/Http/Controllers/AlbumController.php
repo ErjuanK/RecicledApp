@@ -7,19 +7,22 @@ use Illuminate\Http\Request;
 
 class AlbumController extends Controller
 {
-    private $spotify;
-    private ItunesService $itunes;
+    private $itunes;
     
     public function __construct(ItunesService $itunes)
     {
-        $clientId = config('services.spotify.client_id');
-        $clientSecret = config('services.spotify.client_secret');
-        $this->spotify = new \App\Services\SpotifyService($clientId, $clientSecret);
         $this->itunes = $itunes;
     }
     
     public function show($id)
     {
+        $likedAlbums = [];
+        $likedSongs = [];
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $likes = \App\Models\UserLike::where('user_id', \Illuminate\Support\Facades\Auth::id())->get();
+            $likedAlbums = $likes->where('type', 'album')->pluck('spotify_id')->toArray();
+            $likedSongs = $likes->where('type', 'song')->pluck('spotify_id')->toArray();
+        }
         // 1. Try Local DB (if numeric)
         if (is_numeric($id)) {
             $localAlbum = \App\Models\Album::with('artista', 'canciones')->find($id);
@@ -47,12 +50,12 @@ class AlbumController extends Controller
                     ];
                 }
 
-                return view('album', compact('album'));
+                return view('album', compact('album', 'likedAlbums', 'likedSongs'));
             }
         }
 
-        // 2. Fallback to Spotify
-        $albumData = $this->spotify->getAlbum($id);
+        // 2. Fallback to iTunes
+        $albumData = $this->itunes->getAlbum($id);
         
         if ($albumData && !isset($albumData['error'])) {
             
@@ -79,7 +82,7 @@ class AlbumController extends Controller
                     ];
                 }
             }
-            return view('album', compact('album'));
+            return view('album', compact('album', 'likedAlbums', 'likedSongs'));
         }
 
         // 3. Last Resort: Hardcoded Fallbacks for Carousel Albums (to avoid 404 on front page)
@@ -154,11 +157,11 @@ class AlbumController extends Controller
                 }
             }
 
-            return view('album', compact('album'));
+            return view('album', compact('album', 'likedAlbums', 'likedSongs'));
         }
 
-        if (isset($albumData['error']) && $albumData['error'] === 'rate_limited') {
-            abort(429, 'Demasiadas peticiones a la API de Spotify. Por favor, inténtalo de nuevo en unos minutos.');
+        if (isset($albumData['error'])) {
+            abort(404, 'Álbum no encontrado o límite de peticiones.');
         }
 
         abort(404, 'Álbum no encontrado');
@@ -171,13 +174,21 @@ class AlbumController extends Controller
      */
     public function showByItunes(string $artist, string $album)
     {
+        $likedAlbums = [];
+        $likedSongs = [];
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $likes = \App\Models\UserLike::where('user_id', \Illuminate\Support\Facades\Auth::id())->get();
+            $likedAlbums = $likes->where('type', 'album')->pluck('spotify_id')->toArray();
+            $likedSongs = $likes->where('type', 'song')->pluck('spotify_id')->toArray();
+        }
+
         $artistDecoded = urldecode($artist);
         $albumDecoded  = urldecode($album);
 
         $albumData = $this->itunes->getAlbumBySearch($artistDecoded, $albumDecoded);
 
         if ($albumData) {
-            return view('album', ['album' => $albumData]);
+            return view('album', ['album' => $albumData, 'likedAlbums' => $likedAlbums, 'likedSongs' => $likedSongs]);
         }
 
         // Last-resort: show a minimal placeholder so the user is never left with a 404
@@ -191,6 +202,6 @@ class AlbumController extends Controller
             'canciones'   => [],
         ];
 
-        return view('album', ['album' => $fallbackAlbum]);
+        return view('album', ['album' => $fallbackAlbum, 'likedAlbums' => $likedAlbums, 'likedSongs' => $likedSongs]);
     }
 }

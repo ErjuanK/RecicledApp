@@ -147,4 +147,41 @@ class LastFmService
             return [];
         });
     }
+
+    /**
+     * Get artist biography from Last.fm.
+     *
+     * @param string $artistName
+     * @return string|null
+     */
+    public function getArtistBio(string $artistName): ?string
+    {
+        $cacheKey = "lastfm.artist.bio." . md5(strtolower($artistName));
+
+        return Cache::remember($cacheKey, 3600 * 24 * 7, function () use ($artistName) {
+            try {
+                $response = Http::timeout(8)->get($this->baseUrl, [
+                    'method'  => 'artist.getInfo',
+                    'artist'  => $artistName,
+                    'api_key' => $this->apiKey,
+                    'autocorrect' => 1,
+                    'lang'    => 'es',
+                    'format'  => 'json'
+                ]);
+
+                if ($response->successful()) {
+                    $bio = $response->json()['artist']['bio']['content'] ?? null;
+                    if ($bio) {
+                        // Limpiar texto de enlaces "Read more on Last.fm"
+                        $bio = preg_replace('/<a href=".*">Read more on Last.fm<\/a>.*/s', '', $bio);
+                        $bio = preg_replace('/<a href=".*">Leer más en Last.fm<\/a>.*/s', '', $bio);
+                        return trim(strip_tags($bio));
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('LastFmService::getArtistBio error: ' . $e->getMessage());
+            }
+            return null;
+        });
+    }
 }
