@@ -1,5 +1,3 @@
-
-
 <?php $__env->startPush('styles'); ?>
     <link rel="stylesheet" href="<?php echo e(asset('css/estilo-album.css')); ?>">
 <?php $__env->stopPush(); ?>
@@ -37,7 +35,12 @@
                 </p>
 
                 <div class="acciones-album">
-                    <button class="boton-icono"><i class="fa-solid fa-heart"></i></button>
+                    <?php
+                        $isLikedAlbum = isset($likedAlbums) && in_array($album->id, $likedAlbums);
+                    ?>
+                    <button class="boton-icono" onclick="toggleLike(this, 'album', '<?php echo e($album->id); ?>', '<?php echo e(addslashes($album->nombre)); ?>', '<?php echo e(addslashes($album->artista)); ?>', '<?php echo e($album->portada_url); ?>', '')">
+                        <i class="fa-solid fa-heart" style="<?php echo e($isLikedAlbum ? 'color: #a855f7;' : ''); ?>"></i>
+                    </button>
                     <button class="boton-icono"><i class="fa-solid fa-share"></i></button>
                 </div>
             </div>
@@ -65,7 +68,16 @@
                         <span class="artista-cancion-lista"><?php echo e($cancion->artista); ?></span>
                     </div>
                     <span class="duracion-cancion-lista"><?php echo e($cancion->duracion); ?></span>
-                    <span class="opciones-cancion"><i class="fa-solid fa-ellipsis-vertical"></i></span>
+                    
+                    <?php
+                        $isLikedSong = isset($likedSongs) && in_array($cancion->id, $likedSongs);
+                    ?>
+                    <span class="opciones-cancion" style="display: flex; gap: 15px; align-items: center;">
+                        <button onclick="event.preventDefault(); toggleLike(this, 'song', '<?php echo e($cancion->id); ?>', '<?php echo e(addslashes($cancion->titulo)); ?>', '<?php echo e(addslashes($cancion->artista)); ?>', '<?php echo e($album->portada_url); ?>', '')" style="background:none; border:none; cursor:pointer; padding:0;">
+                            <i class="fa-solid fa-heart" style="<?php echo e($isLikedSong ? 'color: #a855f7;' : 'color: #999;'); ?>"></i>
+                        </button>
+                        <i class="fa-solid fa-ellipsis-vertical"></i>
+                    </span>
                 <?php if($cancionIsLocal): ?>
                 </a>
                 <?php else: ?>

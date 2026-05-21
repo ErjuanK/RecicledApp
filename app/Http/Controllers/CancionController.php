@@ -19,6 +19,14 @@ class CancionController extends Controller
     
     public function show($id)
     {
+        $likedSongs = [];
+        if (\Illuminate\Support\Facades\Auth::check()) {
+            $likedSongs = \App\Models\UserLike::where('user_id', \Illuminate\Support\Facades\Auth::id())
+                                              ->where('type', 'song')
+                                              ->pluck('spotify_id')
+                                              ->toArray();
+        }
+
         // 1. Try Local DB lookup (if numeric ID)
         if (is_numeric($id)) {
             $localCancion = \App\Models\Cancion::with('album.artista')->find($id);
@@ -90,7 +98,7 @@ class CancionController extends Controller
                     ]
                 ];
 
-                return view('cancion', compact('cancion'));
+                return view('cancion', compact('cancion', 'likedSongs'));
             }
         }
 
@@ -173,9 +181,7 @@ class CancionController extends Controller
                 'album_id' => $trackData['album']['id'],
                 'duracion' => sprintf("%d:%02d", $minutes, $seconds),
                 'creditos' => [
-                    ['rol' => 'Written By', 'nombres' => $trackData['artists'][0]['name']],
-                    ['rol' => 'Produced By', 'nombres' => 'Producer Name'],
-                    ['rol' => 'Label', 'nombres' => 'Record Label']
+                    ['rol' => 'Escrito por', 'nombres' => $trackData['artists'][0]['name']]
                 ],
                 'letra_html' => $letraHtml,
                 'url_genius' => $geniusUrl,
@@ -187,7 +193,7 @@ class CancionController extends Controller
                 ]
             ];
             
-            return view('cancion', compact('cancion'));
+            return view('cancion', compact('cancion', 'likedSongs'));
         } else {
             if (isset($trackData['error'])) {
                 abort(404, 'Canción no encontrada o no disponible.');

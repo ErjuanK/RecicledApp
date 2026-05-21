@@ -304,6 +304,54 @@
                 });
             <?php endif; ?>
         });
+
+        // Lógica Global de "Me Gustas"
+        window.isLoggedIn = <?php echo json_encode(Auth::check(), 15, 512) ?>;
+        window.csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        async function toggleLike(btn, type, spotify_id, name, artist_name = '', image_url = '', external_url = '') {
+            if (!window.isLoggedIn) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Inicia sesión',
+                    text: 'Debes estar logueado para poder guardar tus favoritos.',
+                    confirmButtonColor: '#6F00D0',
+                    confirmButtonText: 'Ir a Login',
+                    showCancelButton: true,
+                    cancelButtonText: 'Cancelar'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '<?php echo e(route('login')); ?>';
+                    }
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('<?php echo e(route('likes.toggle')); ?>', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': window.csrfToken
+                    },
+                    body: JSON.stringify({
+                        type, spotify_id, name, artist_name, image_url, external_url
+                    })
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const icon = btn.querySelector('i');
+                    if (data.liked) {
+                        icon.style.color = '#a855f7'; // Color de "Me gusta"
+                    } else {
+                        icon.style.color = ''; // Volver al color por defecto
+                    }
+                }
+            } catch (error) {
+                console.error("Error toggling like", error);
+            }
+        }
     </script>
 </body>
 </html>

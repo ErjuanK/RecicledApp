@@ -592,4 +592,87 @@ class ItunesService
             'weekly_playlist'     => $resultPlaylist,
         ];
     }
+
+    /**
+     * Get Album by search term (Artist & Album Name) and format it as an object for the view.
+     */
+    public function getAlbumBySearch(string $artist, string $albumName): ?object
+    {
+        $cacheKey = "itunes.album.search." . md5($artist . '|' . $albumName);
+
+        return Cache::remember($cacheKey, 86400, function () use ($artist, $albumName) {
+            try {
+                // Search for the album to get the collectionId
+                $response = Http::get("https://itunes.apple.com/search", [
+                    'term'   => $artist . ' ' . $albumName,
+                    'entity' => 'album',
+                    'limit'  => 3,
+                ]);
+
+                if ($response->successful()) {
+                    $results = $response->json()['results'] ?? [];
+                    $collectionId = null;
+                    
+                    // Try to find the exact collectionName or artistName match, or default to the first result
+                    foreach ($results as $r) {
+                        if (stripos($r['collectionName'], $albumName) !== false) {
+                            $collectionId = $r['collectionId'];
+                            break;
+                        }
+                    }
+                    if (!$collectionId && !empty($results)) {
+                        $collectionId = $results[0]['collectionId'];
+                    }
+
+                    if ($collectionId) {
+                        // Lookup collection details and tracks
+                        $lookupResponse = Http::get("https://itunes.apple.com/lookup", [
+                            'id'     => $collectionId,
+                            'entity' => 'song'
+                        ]);
+
+                        if ($lookupResponse->successful()) {
+                            $lookupData = $lookupResponse->json()['results'] ?? [];
+                            if (empty($lookupData)) return null;
+
+                            $albumInfo = $lookupData[0]; // Collection info
+                            $tracksData = array_slice($lookupData, 1); // Tracks
+
+                            $highResImage = str_replace('100x100bb.jpg', '600x600bb.jpg', $albumInfo['artworkUrl100'] ?? '');
+
+                            $mappedTracks = [];
+                            foreach ($tracksData as $item) {
+                                if (($item['wrapperType'] ?? '') === 'track') {
+                                    $minutes = floor(($item['trackTimeMillis'] ?? 0) / 60000);
+                                    $seconds = (($item['trackTimeMillis'] ?? 0) % 60000) / 1000;
+                                    
+                                    $mappedTracks[] = (object)[
+                                        'id'       => $item['trackId'],
+                                        'titulo'   => $item['trackName'],
+                                        'artista'  => $item['artistName'] ?? $artist,
+                                        'duracion' => sprintf("%d:%02d", $minutes, $seconds),
+                                    ];
+                                }
+                            }
+
+                            $releaseYear = isset($albumInfo['releaseDate']) ? substr($albumInfo['releaseDate'], 0, 4) : date('Y');
+
+                            return (object)[
+                                'id'          => $albumInfo['collectionId'],
+                                'nombre'      => $albumInfo['collectionName'],
+                                'portada_url' => $highResImage ?: asset('multimedia/img/default-album.jpg'),
+                                'artista'     => $albumInfo['artistName'],
+                                'artista_id'  => $albumInfo['artistId'] ?? null,
+                                'descripcion' => "Álbum lanzado en {$releaseYear}. " . ucfirst($albumInfo['primaryGenreName'] ?? 'Música') . " oficial.",
+                                'canciones'   => $mappedTracks,
+                            ];
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::error('ItunesService::getAlbumBySearch Error: ' . $e->getMessage());
+            }
+            return null;
+        });
+    }
 }
