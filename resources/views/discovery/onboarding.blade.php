@@ -156,42 +156,57 @@
                     <line :x1="conn.x1" :y1="conn.y1" :x2="conn.x2" :y2="conn.y2" stroke="#a855f7" stroke-width="2" class="opacity-60" stroke-linecap="round"></line>
                 </template>
             </svg>
+            <div class="relative w-full max-w-3xl mx-auto">
+                {{-- Left Arrow --}}
+                <button x-show="genreSearchQuery === '' && currentGenrePage > 0"
+                        @click="currentGenrePage--; updateConnections()"
+                        class="absolute -left-12 md:-left-20 top-1/2 -translate-y-1/2 rounded-full bg-white text-purple-600 shadow-md border border-purple-100 hover:bg-purple-50 hover:scale-110 transition-all duration-300 w-12 h-12 flex items-center justify-center z-20 cursor-pointer">
+                    <svg class="w-6 h-6 pr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                </button>
 
-            <div class="flex flex-wrap justify-center gap-3 relative z-10 w-full max-w-3xl mx-auto pb-10 pt-4">
-                <template x-for="(genre, index) in filteredGenres" :key="genre">
-                    <button
-                        :id="'tgt-genre-' + index"
-                        :data-genre="genre"
-                        @click="toggleGenre(genre)"
-                        class="rounded-full font-medium transition-all duration-500 relative flex justify-center items-center cursor-pointer"
-                        :class="[
-                            selectedGenres.includes(genre)
-                                ? 'bg-purple-100 border-2 border-purple-400 text-purple-900 shadow-[0_0_15px_rgba(168,85,247,0.4)] scale-110 z-20 px-6 py-2.5 font-bold'
-                                : 'bg-white/90 text-gray-700 shadow-sm border border-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 hover:text-purple-600 z-10',
+                <div class="flex flex-wrap justify-center gap-3 relative z-10 w-full pb-10 pt-4">
+                    <template x-for="(genre, index) in filteredGenres" :key="genre">
+                        <button
+                            :id="'tgt-genre-' + index"
+                            :data-genre="genre"
+                            @click="toggleGenre(genre)"
+                            class="rounded-full font-medium transition-all duration-500 relative flex justify-center items-center cursor-pointer"
+                            :class="[
+                                selectedGenres.includes(genre)
+                                    ? 'bg-purple-100 border-2 border-purple-400 text-purple-900 shadow-[0_0_15px_rgba(168,85,247,0.4)] scale-110 z-20 px-6 py-2.5 font-bold'
+                                    : 'bg-white/90 text-gray-700 shadow-sm border border-transparent hover:bg-white hover:shadow-md hover:-translate-y-1 hover:text-purple-600 z-10',
+                                
+                                /* Clean visual sizing without offsets */
+                                (!selectedGenres.includes(genre) && index % 4 === 0) ? 'text-lg px-6 py-2' : '',
+                                (!selectedGenres.includes(genre) && index % 4 === 1) ? 'text-sm px-4 py-1.5' : '',
+                                (!selectedGenres.includes(genre) && index % 4 === 2) ? 'text-base px-5 py-2' : '',
+                                (!selectedGenres.includes(genre) && index % 4 === 3) ? 'text-sm px-4 py-1.5' : ''
+                            ]"
+                            style="animation: fadeUp 0.5s ease backwards;"
+                            :style="`animation-delay: ${(index % 25) * 0.02}s`"
+                        >
+                            <span x-text="genre" class="capitalize"></span>
                             
-                            /* Clean visual sizing without offsets */
-                            (!selectedGenres.includes(genre) && index % 4 === 0) ? 'text-lg px-6 py-2' : '',
-                            (!selectedGenres.includes(genre) && index % 4 === 1) ? 'text-sm px-4 py-1.5' : '',
-                            (!selectedGenres.includes(genre) && index % 4 === 2) ? 'text-base px-5 py-2' : '',
-                            (!selectedGenres.includes(genre) && index % 4 === 3) ? 'text-sm px-4 py-1.5' : ''
-                        ]"
-                        style="animation: fadeUp 0.5s ease backwards;"
-                        :style="`animation-delay: ${(index % 25) * 0.02}s`"
-                    >
-                        <span x-text="genre" class="capitalize"></span>
-                        
-                        {{-- Small checkmark when selected --}}
-                        <svg x-show="selectedGenres.includes(genre)" class="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white rounded-full p-1 border-2 border-white shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </button>
-                </template>
-                
-                {{-- Empty search state --}}
-                <div x-show="filteredGenres.length === 0 && genres.length > 0" class="w-full py-12 text-center text-gray-500">
-                    <i class="fa-solid fa-ghost text-4xl mb-3 opacity-20"></i>
-                    <p>No se encontraron géneros que coincidan con "<span x-text="genreSearchQuery"></span>"</p>
+                            {{-- Small checkmark when selected --}}
+                            <svg x-show="selectedGenres.includes(genre)" class="absolute -top-1 -right-1 w-5 h-5 bg-purple-500 text-white rounded-full p-1 border-2 border-white shadow-sm" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </button>
+                    </template>
                 </div>
+
+                {{-- Right Arrow --}}
+                <button x-show="genreSearchQuery === '' && currentGenrePage < maxGenrePage"
+                        @click="currentGenrePage++; updateConnections()"
+                        class="absolute -right-12 md:-right-20 top-1/2 -translate-y-1/2 rounded-full bg-white text-purple-600 shadow-md border border-purple-100 hover:bg-purple-50 hover:scale-110 transition-all duration-300 w-12 h-12 flex items-center justify-center z-20 cursor-pointer">
+                    <svg class="w-6 h-6 pl-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+                </button>
+            </div>
+            
+            {{-- Empty search state --}}
+            <div x-show="filteredGenres.length === 0 && genres.length > 0" class="w-full py-12 text-center text-gray-500">
+                <i class="fa-solid fa-ghost text-4xl mb-3 opacity-20"></i>
+                <p>No se encontraron géneros que coincidan con "<span x-text="genreSearchQuery"></span>"</p>
             </div>
         </div>
 
@@ -787,12 +802,18 @@ function onboardingFlow() {
         genreSearchQuery: '',
         isGenreSearchExpanded: false,
         gridConnections: [],
+        currentGenrePage: 0,
         
+        get maxGenrePage() {
+            return Math.max(0, Math.ceil(this.genres.length / 25) - 1);
+        },
+
         get filteredGenres() {
             let results = [];
             
             if (this.genreSearchQuery === '') {
-                results = this.random25;
+                const start = this.currentGenrePage * 25;
+                results = this.genres.slice(start, start + 25);
             } else {
                 results = this.genres.filter(genre => 
                     genre.toLowerCase().includes(this.genreSearchQuery.toLowerCase())
@@ -886,17 +907,15 @@ function onboardingFlow() {
             try {
                 const res = await fetch('{{ url("discovery/genres") }}');
                 const all = await res.json();
-                this.genres = all;
-                // Shuffle to get a nice initial 25 matrix
-                this.random25 = [...all].sort(() => 0.5 - Math.random()).slice(0, 25);
+                this.genres = all.sort();
             } catch (e) {
                 console.error('Failed to load genres:', e);
                 const all = ['pop', 'rock', 'hip-hop', 'electronic', 'jazz', 'r-n-b', 'indie', 'latin', 'classical', 'metal', 'k-pop', 'country', 'blues', 'folk', 'reggae'];
-                this.genres = all;
-                this.random25 = all;
+                this.genres = all.sort();
             }
             // Listen for search input changes to update connections if elements move
             this.$watch('genreSearchQuery', () => {
+                this.currentGenrePage = 0;
                 this.updateConnections();
             });
             
