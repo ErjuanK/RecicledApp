@@ -60,6 +60,7 @@ Route::group(['prefix' => 'panel/artista/{id}', 'as' => 'artist.panel.'], functi
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\AdminController::class, 'index'])->name('dashboard');
+    Route::delete('/artistas/{id}', [App\Http\Controllers\AdminController::class, 'destroyArtista'])->name('artistas.destroy');
 
     // Album Management
     Route::get('/albums', [App\Http\Controllers\AdminController::class, 'albums'])->name('albums');

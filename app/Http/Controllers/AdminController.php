@@ -108,6 +108,17 @@ class AdminController extends Controller
         return redirect()->route('admin.usuarios')->with('success', 'Usuario eliminado correctamente.');
     }
 
+    /**
+     * Delete an artist.
+     */
+    public function destroyArtista($id)
+    {
+        $artista = Artista::findOrFail($id);
+        $artista->delete();
+
+        return redirect()->route('admin.dashboard')->with('success', 'Artista eliminado correctamente.');
+    }
+
     public function editUsuario($id)
     {
         $usuario = User::findOrFail($id);
