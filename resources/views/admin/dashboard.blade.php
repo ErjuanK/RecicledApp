@@ -111,7 +111,7 @@
                                 </a>
                                 
                                 <form method="POST" action="{{ route('admin.artistas.destroy', $artista->artista_id) }}"
-                                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este artista?')"
+                                      onsubmit="return confirm('¿Estás seguro de que quieres eliminar este artista?')">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Eliminar">
