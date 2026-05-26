@@ -20,7 +20,7 @@
                         </div>
                     @endif
 
-                    <form action="{{ route('artist.song.update', [$album->album_id, $cancion->cancion_id]) }}" method="POST">
+                    <form action="{{ route('artist.panel.song.update', ['id' => $artista->artista_id, 'albumId' => $album->album_id, 'cancionId' => $cancion->cancion_id]) }}" method="POST">
                         @csrf
                         @method('PUT')
                         
@@ -59,7 +59,7 @@
                         </div>
 
                         <div class="d-flex justify-content-between">
-                            <a href="{{ route('artist.album.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+                            <a href="{{ route('artist.panel.album.index', $artista->artista_id) }}" class="btn btn-outline-secondary">Cancelar</a>
                             <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                         </div>
                     </form>
