@@ -1,9 +1,9 @@
-@extends('layouts.app')
 
-@section('content')
+
+<?php $__env->startSection('content'); ?>
 <div class="container mx-auto px-4 py-8">
-    <form action="{{ route('artist.panel.song.store.standalone', $artista->artista_id) }}" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-sm p-6 max-w-[1000px] mx-auto">
-        @csrf
+    <form action="<?php echo e(route('artist.panel.song.store.standalone', $artista->artista_id)); ?>" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-sm p-6 max-w-[1000px] mx-auto">
+        <?php echo csrf_field(); ?>
         
         <!-- Header -->
         <div class="flex items-center justify-between mb-8 pb-4 border-b border-gray-200">
@@ -26,9 +26,9 @@
                     <label class="text-sm font-semibold text-gray-700 uppercase tracking-wider">Seleccionar Álbum (Opcional)</label>
                     <select name="album_id" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-gray-900 focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all">
                         <option value="">-- Sin Álbum (Single) --</option>
-                        @foreach($albumes as $album)
-                            <option value="{{ $album->album_id }}">{{ $album->titulo }}</option>
-                        @endforeach
+                        <?php $__currentLoopData = $albumes; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $album): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <option value="<?php echo e($album->album_id); ?>"><?php echo e($album->titulo); ?></option>
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </select>
                     <p class="text-xs text-gray-500">Si no seleccionas un álbum, se guardará como Single.</p>
                 </div>
@@ -103,7 +103,7 @@
 
         <!-- Footer Actions -->
         <div class="flex items-center justify-end gap-4">
-            <a href="{{ route('artist.panel.dashboard', $artista->artista_id) }}" class="px-6 py-3 rounded-lg text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">Cancelar</a>
+            <a href="<?php echo e(route('artist.panel.dashboard', $artista->artista_id)); ?>" class="px-6 py-3 rounded-lg text-sm font-semibold text-gray-600 hover:text-gray-900 hover:bg-gray-100 transition-colors">Cancelar</a>
             <button type="submit" class="px-8 py-3 rounded-lg bg-primary text-white text-sm font-bold shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:translate-y-[-1px] active:translate-y-[0px] transition-all flex items-center gap-2">
                 <span class="material-symbols-outlined text-sm">save</span>
                 Guardar Canción
@@ -113,9 +113,7 @@
     </form>
 </div>
 
-@endsection
-
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script>
@@ -135,9 +133,9 @@
 <style>
     .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script>
     function previewFile(input) {
         const file = input.files[0];
@@ -169,4 +167,6 @@
         });
     }
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\xampp\htdocs\RecicledApp\resources\views/artista/panel/cancion/create.blade.php ENDPATH**/ ?>
