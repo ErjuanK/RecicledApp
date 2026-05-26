@@ -7,6 +7,8 @@ use App\Models\Album;
 use App\Models\Cancion;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class AdminController extends Controller
 {
@@ -93,8 +95,93 @@ class AdminController extends Controller
     public function destroyUsuario($id)
     {
         $usuario = User::findOrFail($id);
+        
+        // Eliminar relaciones para evitar errores de restricción de clave foránea
+        $usuario->artistas()->detach();
+        DB::table('user_likes')->where('user_id', $id)->delete();
+        if (Schema::hasTable('user_song_actions')) {
+            DB::table('user_song_actions')->where('user_id', $id)->delete();
+        }
+        
         $usuario->delete();
 
         return redirect()->route('admin.usuarios')->with('success', 'Usuario eliminado correctamente.');
+    }
+
+    public function editUsuario($id)
+    {
+        $usuario = User::findOrFail($id);
+        return view('admin.usuarios_edit', compact('usuario'));
+    }
+
+    public function updateUsuario(Request $request, $id)
+    {
+        $usuario = User::findOrFail($id);
+        
+        $request->validate([
+            'nombre_usuario' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,'.$usuario->id,
+            'rol' => 'required|in:admin,usuario,artista',
+            'nombre_real' => 'nullable|string|max:255',
+            'apellidos' => 'nullable|string|max:255',
+        ]);
+
+        // Using name or nombre_usuario depending on DB. The model uses both.
+        if (Schema::hasColumn('users', 'nombre_usuario')) {
+            $usuario->nombre_usuario = $request->nombre_usuario;
+        } else {
+            $usuario->name = $request->nombre_usuario;
+        }
+        $usuario->email = $request->email;
+        $usuario->rol = $request->rol;
+        $usuario->nombre_real = $request->nombre_real;
+        $usuario->apellidos = $request->apellidos;
+        $usuario->save();
+
+        return redirect()->route('admin.usuarios')->with('success', 'Usuario actualizado correctamente.');
+    }
+
+    public function editAlbum($id)
+    {
+        $album = Album::with('artista')->findOrFail($id);
+        return view('admin.albums_edit', compact('album'));
+    }
+
+    public function updateAlbum(Request $request, $id)
+    {
+        $album = Album::findOrFail($id);
+        
+        $request->validate([
+            'titulo' => 'required|string|max:255',
+            'estado' => 'required|in:publicado,borrador',
+        ]);
+
+        $album->titulo = $request->titulo;
+        $album->estado = $request->estado;
+        $album->save();
+
+        return redirect()->route('admin.albums')->with('success', 'Álbum actualizado correctamente.');
+    }
+
+    public function editCancion($id)
+    {
+        $cancion = Cancion::with('artista', 'album')->findOrFail($id);
+        return view('admin.canciones_edit', compact('cancion'));
+    }
+
+    public function updateCancion(Request $request, $id)
+    {
+        $cancion = Cancion::findOrFail($id);
+        
+        $request->validate([
+            'titulo' => 'required|string|max:255',
+            'estado' => 'required|in:publico,privado,oculto',
+        ]);
+
+        $cancion->titulo = $request->titulo;
+        $cancion->estado = $request->estado;
+        $cancion->save();
+
+        return redirect()->route('admin.canciones')->with('success', 'Canción actualizada correctamente.');
     }
 }

@@ -63,14 +63,20 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Album Management
     Route::get('/albums', [App\Http\Controllers\AdminController::class, 'albums'])->name('albums');
+    Route::get('/albums/{id}/edit', [App\Http\Controllers\AdminController::class, 'editAlbum'])->name('albums.edit');
+    Route::put('/albums/{id}', [App\Http\Controllers\AdminController::class, 'updateAlbum'])->name('albums.update');
     Route::delete('/albums/{id}', [App\Http\Controllers\AdminController::class, 'destroyAlbum'])->name('albums.destroy');
 
     // Song Management
     Route::get('/canciones', [App\Http\Controllers\AdminController::class, 'canciones'])->name('canciones');
+    Route::get('/canciones/{id}/edit', [App\Http\Controllers\AdminController::class, 'editCancion'])->name('canciones.edit');
+    Route::put('/canciones/{id}', [App\Http\Controllers\AdminController::class, 'updateCancion'])->name('canciones.update');
     Route::delete('/canciones/{id}', [App\Http\Controllers\AdminController::class, 'destroyCancion'])->name('canciones.destroy');
 
     // User Management
     Route::get('/usuarios', [App\Http\Controllers\AdminController::class, 'usuarios'])->name('usuarios');
+    Route::get('/usuarios/{id}/edit', [App\Http\Controllers\AdminController::class, 'editUsuario'])->name('usuarios.edit');
+    Route::put('/usuarios/{id}', [App\Http\Controllers\AdminController::class, 'updateUsuario'])->name('usuarios.update');
     Route::delete('/usuarios/{id}', [App\Http\Controllers\AdminController::class, 'destroyUsuario'])->name('usuarios.destroy');
 });
 
