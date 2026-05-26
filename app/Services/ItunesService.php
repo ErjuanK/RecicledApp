@@ -23,39 +23,91 @@ class ItunesService
      */
     public function searchAlbums(string $query, int $limit = 10): array
     {
-        $cacheKey = "itunes.search.albums." . md5($query . $limit);
+        $cacheKey = "itunes.search.albums.v2." . md5($query . $limit);
 
         return Cache::remember($cacheKey, 86400, function () use ($query, $limit) {
+            $mappedResults = [];
+            $seenIds = [];
+
             try {
+                // 1) Direct album search
                 $response = Http::get("https://itunes.apple.com/search", [
                     'term'   => $query,
                     'entity' => 'album',
-                    'limit'  => $limit
+                    'limit'  => $limit * 3,
                 ]);
 
                 if ($response->successful()) {
-                    $data = $response->json();
-                    $mappedResults = [];
+                    foreach ($response->json()['results'] ?? [] as $result) {
+                        $collectionName = $result['collectionName'] ?? '';
+                        $trackCount = $result['trackCount'] ?? 1;
 
-                    foreach ($data['results'] ?? [] as $result) {
+                        if ($trackCount <= 1 || str_ends_with($collectionName, '- Single')) {
+                            continue;
+                        }
+
+                        $id = $result['collectionId'];
+                        if (isset($seenIds[$id])) continue;
+                        $seenIds[$id] = true;
+
                         $highResImage = str_replace('100x100bb.jpg', '600x600bb.jpg', $result['artworkUrl100'] ?? '');
                         $mappedResults[] = [
-                            'id'            => $result['collectionId'],
-                            'name'          => $result['collectionName'],
+                            'id'            => $id,
+                            'name'          => $collectionName,
                             'artists'       => [['id' => $result['artistId'] ?? null, 'name' => $result['artistName']]],
                             'images'        => [['url' => $highResImage]],
                             'release_date'  => $result['releaseDate'] ?? now()->toIso8601String(),
                             'album_type'    => 'album',
-                            'total_tracks'  => $result['trackCount'] ?? 1,
-                            'external_urls' => ['spotify' => $result['collectionViewUrl'] ?? '#']
+                            'total_tracks'  => $trackCount,
+                            'external_urls' => ['spotify' => $result['collectionViewUrl'] ?? '#'],
                         ];
+
+                        if (count($mappedResults) >= $limit) {
+                            return $mappedResults;
+                        }
                     }
-                    return $mappedResults;
+                }
+
+                // 2) If we still need more albums, search songs and extract unique albums
+                if (count($mappedResults) < $limit) {
+                    $songResponse = Http::get("https://itunes.apple.com/search", [
+                        'term'   => $query,
+                        'entity' => 'song',
+                        'limit'  => 50,
+                    ]);
+
+                    if ($songResponse->successful()) {
+                        foreach ($songResponse->json()['results'] ?? [] as $track) {
+                            $collectionId = $track['collectionId'] ?? null;
+                            $collectionName = $track['collectionName'] ?? '';
+
+                            if (!$collectionId || isset($seenIds[$collectionId])) continue;
+                            if (str_ends_with($collectionName, '- Single')) continue;
+
+                            $seenIds[$collectionId] = true;
+                            $highResImage = str_replace('100x100bb.jpg', '600x600bb.jpg', $track['artworkUrl100'] ?? '');
+                            $mappedResults[] = [
+                                'id'            => $collectionId,
+                                'name'          => $collectionName,
+                                'artists'       => [['id' => $track['artistId'] ?? null, 'name' => $track['artistName'] ?? 'Unknown']],
+                                'images'        => [['url' => $highResImage]],
+                                'release_date'  => $track['releaseDate'] ?? now()->toIso8601String(),
+                                'album_type'    => 'album',
+                                'total_tracks'  => $track['trackCount'] ?? 1,
+                                'external_urls' => ['spotify' => $track['collectionViewUrl'] ?? '#'],
+                            ];
+
+                            if (count($mappedResults) >= $limit) {
+                                break;
+                            }
+                        }
+                    }
                 }
             } catch (\Exception $e) {
                 Log::error('ItunesService::searchAlbums Error: ' . $e->getMessage());
             }
-            return [];
+
+            return $mappedResults;
         });
     }
 

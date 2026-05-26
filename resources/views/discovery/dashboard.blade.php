@@ -180,58 +180,7 @@
         </div>
     </section>
 
-    {{-- ===== FLOATING PLAYER ===== --}}
-    <div x-show="currentTrack" x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="translate-y-full opacity-0"
-         x-transition:enter-end="translate-y-0 opacity-100"
-         class="fixed bottom-0 left-0 right-0 z-50">
-
-        <div class="glass-strong mx-4 mb-4 rounded-2xl shadow-2xl shadow-black/50">
-            {{-- Progress Bar --}}
-            <div class="h-1 bg-white/5 rounded-t-2xl overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-accent to-fuchsia-500 rounded-full transition-all duration-1000"
-                     :style="'width: ' + progress + '%'"></div>
-            </div>
-
-            <div class="px-5 py-3 flex items-center gap-4">
-                {{-- Track Info --}}
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <img :src="currentTrack?.cover" alt="" class="w-12 h-12 rounded-lg object-cover shadow-lg ring-1 ring-white/10">
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-white truncate" x-text="currentTrack?.title"></p>
-                        <p class="text-xs text-gray-400 truncate" x-text="currentTrack?.artist"></p>
-                    </div>
-                </div>
-
-                {{-- Controls --}}
-                <div class="flex items-center gap-3">
-                    <button @click="previousTrack()" class="text-gray-400 hover:text-white transition-colors p-1">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                    </button>
-                    <button @click="togglePlay()"
-                            class="w-10 h-10 rounded-full bg-white flex items-center justify-center hover:scale-110 transition-transform shadow-lg">
-                        <svg x-show="!isPlaying" class="w-5 h-5 text-black ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        <svg x-show="isPlaying" class="w-5 h-5 text-black" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    </button>
-                    <button @click="nextTrack()" class="text-gray-400 hover:text-white transition-colors p-1">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                    </button>
-                </div>
-
-                {{-- Time --}}
-                <div class="hidden sm:flex items-center gap-2 text-xs text-gray-500 font-medium">
-                    <span x-text="currentTime">0:00</span>
-                    <span>/</span>
-                    <span x-text="currentTrack?.duration">0:00</span>
-                </div>
-
-                {{-- Close --}}
-                <button @click="stop()" class="text-gray-500 hover:text-white transition-colors p-1 ml-2">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-        </div>
-    </div>
+    {{-- Reproductor eliminado en la vista Discover (flotante eliminado) --}}
 </div>
 
 <script>

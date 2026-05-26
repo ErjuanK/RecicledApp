@@ -185,35 +185,7 @@
         border-color: #f87171;
     }
 
-    /* Mini play button (canciones) */
-    .like-card-play {
-        position: absolute;
-        bottom: 10px; right: 10px;
-        z-index: 20;
-        width: 34px; height: 34px;
-        border-radius: 50%;
-        background: #7c3aed;
-        border: none;
-        color: #fff;
-        font-size: 0.8rem;
-        display: flex; align-items: center; justify-content: center;
-        cursor: pointer;
-        opacity: 0;
-        transform: translateY(4px);
-        transition: opacity 0.18s, transform 0.18s, background 0.15s;
-        box-shadow: 0 4px 12px rgba(124,58,237,0.4);
-    }
-    .like-card:hover .like-card-play { opacity: 1; transform: translateY(0); }
-    .like-card-play:hover { background: #6d28d9; }
-    .like-card-play.playing {
-        opacity: 1;
-        transform: translateY(0);
-        animation: pulse-ring 1.5s infinite;
-    }
-    @keyframes pulse-ring {
-        0%,100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.3); }
-        50%      { box-shadow: 0 0 0 8px rgba(124,58,237,0); }
-    }
+
 
     /* Cuerpo de la card */
     .like-card-body {
@@ -288,6 +260,9 @@
             <h1>Mis Me Gustas</h1>
             <p><?php echo e($songs->count() + $albums->count() + $artists->count()); ?> elementos guardados</p>
         </div>
+        <div style="margin-left:auto;">
+            <button id="btn-import-playlist" class="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors">Importar Playlist</button>
+        </div>
     </div>
 
     <!-- ══════════ CANCIONES ══════════ -->
@@ -327,14 +302,7 @@
                                 </button>
                             </form>
 
-                            <!-- Play preview -->
-                            <?php if($song->extra['preview_url'] ?? null): ?>
-                            <button class="like-card-play"
-                                    onclick="togglePreview(this, '<?php echo e($song->extra['preview_url']); ?>')"
-                                    title="Escuchar preview">
-                                <i class="fa-solid fa-play"></i>
-                            </button>
-                            <?php endif; ?>
+
                         </div>
                         <div class="like-card-body">
                             <div class="like-card-name"><?php echo e($song->name); ?></div>
@@ -449,6 +417,28 @@
 </div>
 
 <audio id="preview-audio" style="display:none;"></audio>
+
+<div id="import-modal" style="display:none; position:fixed; inset:0; z-index:60; align-items:center; justify-content:center;">
+    <div style="position:absolute; inset:0; background:rgba(0,0,0,0.4);"></div>
+    <div style="background:#fff; width:720px; max-width:94%; border-radius:12px; padding:24px; position:relative; z-index:62; box-shadow:0 18px 40px rgba(16,24,40,0.5);">
+        <h3 style="margin:0 0 8px; font-weight:800; color:#2d1060; font-size:1.25rem;">Importar Playlist</h3>
+        <p style="margin:0 0 12px; color:#6b21a8; font-size:0.95rem;">Pega aquí una lista de canciones (máximo 100). Formato: "Canción - Artista" (una por línea)</p>
+        <div style="background:#f3e8ff; border:1px solid #ddd6fe; border-radius:8px; padding:10px; margin-bottom:12px; font-size:0.85rem; color:#5b21b6;">
+            <strong>Ejemplos válidos:</strong><br>
+            Shape of You - Ed Sheeran<br>
+            Blinding Lights | The Weeknd
+        </div>
+        <textarea id="import-text" placeholder="Pega tus canciones aquí..." style="width:100%; min-height:200px; padding:12px; border:1.5px solid #e9d5ff; border-radius:8px; resize:vertical; font-family:monospace; font-size:0.9rem;"></textarea>
+        <div style="margin-top:8px; color:#9333ea; font-size:0.85rem;">
+            <span id="import-count">0</span> / 100 canciones
+        </div>
+        <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+            <button id="import-cancel" class="px-4 py-2 rounded-full border border-gray-300 hover:bg-gray-50 transition-colors">Cerrar</button>
+            <button id="import-submit" class="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700 transition-colors font-semibold">Importar</button>
+        </div>
+        <div id="import-status" style="margin-top:14px; padding:10px; border-radius:6px; display:none; font-size:0.95rem;"></div>
+    </div>
+</div>
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startPush('scripts'); ?>
@@ -476,38 +466,117 @@ document.querySelectorAll('.carousel-track').forEach(track => {
     if (id) updateArrows(id);
 });
 
-/* ── Preview audio ── */
-let currentPlayBtn = null;
-const previewAudio = document.getElementById('preview-audio');
 
-function togglePreview(btn, url) {
-    if (currentPlayBtn && currentPlayBtn !== btn) {
-        previewAudio.pause();
-        currentPlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        currentPlayBtn.classList.remove('playing');
-    }
-    if (previewAudio.src.includes(encodeURIComponent(url).slice(0,20)) && !previewAudio.paused) {
-        previewAudio.pause();
-        btn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        btn.classList.remove('playing');
-        currentPlayBtn = null;
+</script>
+<script>
+// Import modal logic
+const btnImport = document.getElementById('btn-import-playlist');
+const modal = document.getElementById('import-modal');
+const btnCancel = document.getElementById('import-cancel');
+const btnSubmit = document.getElementById('import-submit');
+const textarea = document.getElementById('import-text');
+const statusEl = document.getElementById('import-status');
+const countEl = document.getElementById('import-count');
+
+// Contador de canciones en tiempo real
+textarea.addEventListener('input', () => {
+    const text = textarea.value.trim();
+    const lines = text ? text.split('\n') : [];
+    const validLines = lines.filter(l => l.trim() !== '').length;
+    
+    countEl.textContent = validLines;
+    countEl.style.color = validLines > 100 ? '#dc2626' : '#9333ea';
+    
+    if (validLines > 100) {
+        btnSubmit.disabled = true;
+        btnSubmit.style.opacity = '0.6';
+        btnSubmit.title = 'Máximo 100 canciones';
     } else {
-        previewAudio.src = url;
-        previewAudio.play().then(() => {
-            btn.innerHTML = '<i class="fa-solid fa-pause"></i>';
-            btn.classList.add('playing');
-            currentPlayBtn = btn;
-        }).catch(() => {});
-    }
-}
-
-previewAudio.addEventListener('ended', () => {
-    if (currentPlayBtn) {
-        currentPlayBtn.innerHTML = '<i class="fa-solid fa-play"></i>';
-        currentPlayBtn.classList.remove('playing');
-        currentPlayBtn = null;
+        btnSubmit.disabled = false;
+        btnSubmit.style.opacity = '1';
+        btnSubmit.title = '';
     }
 });
+
+if (btnImport) btnImport.addEventListener('click', () => {
+    modal.style.display = 'flex';
+    textarea.value = '';
+    countEl.textContent = '0';
+    statusEl.style.display = 'none';
+    statusEl.textContent = '';
+    btnSubmit.disabled = false;
+    btnSubmit.style.opacity = '1';
+    textarea.focus();
+});
+
+btnCancel.addEventListener('click', () => {
+    modal.style.display = 'none';
+});
+
+btnSubmit.addEventListener('click', async () => {
+    const text = textarea.value.trim();
+    if (!text) {
+        showStatus('Por favor, pega al menos una canción.', 'error');
+        return;
+    }
+    
+    const validLines = text.split('\n').filter(l => l.trim() !== '').length;
+    if (validLines > 100) {
+        showStatus(`Máximo 100 canciones. Tienes ${validLines}.`, 'error');
+        return;
+    }
+
+    showStatus('Importando... por favor espera.', 'loading');
+    btnSubmit.disabled = true;
+
+    try {
+        const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+        const res = await fetch('<?php echo e(route("likes.import")); ?>', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrf,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ text })
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+            const msg = `✅ ¡Importación completada! 🎵 ${data.imported.songs} canción(es), 💿 ${data.imported.albums} álbum(es), 🎤 ${data.imported.artists} artista(s).`;
+            showStatus(msg, 'success');
+            setTimeout(() => location.reload(), 1500);
+        } else if (res.status === 422) {
+            showStatus(`❌ ${data.error}`, 'error');
+        } else {
+            showStatus(data.message || 'Error al importar.', 'error');
+        }
+    } catch (e) {
+        console.error(e);
+        showStatus('Error en la solicitud. Intenta de nuevo.', 'error');
+    } finally {
+        btnSubmit.disabled = false;
+    }
+});
+
+function showStatus(msg, type) {
+    statusEl.style.display = 'block';
+    statusEl.textContent = msg;
+    
+    if (type === 'success') {
+        statusEl.style.background = '#dcfce7';
+        statusEl.style.color = '#15803d';
+        statusEl.style.border = '1px solid #86efac';
+    } else if (type === 'error') {
+        statusEl.style.background = '#fee2e2';
+        statusEl.style.color = '#991b1b';
+        statusEl.style.border = '1px solid #fca5a5';
+    } else {
+        statusEl.style.background = '#fef3c7';
+        statusEl.style.color = '#78350f';
+        statusEl.style.border = '1px solid #fde68a';
+    }
+}
 </script>
 <?php $__env->stopPush(); ?>
 

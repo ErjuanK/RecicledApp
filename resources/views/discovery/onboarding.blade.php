@@ -285,7 +285,7 @@
                         type="text"
                         x-model="albumQuery"
                         @input.debounce.400ms="searchAlbums()"
-                        placeholder="Buscar álbumes en Spotify..."
+                        placeholder="Buscar álbumes musicales..."
                         class="w-full pl-12 pr-4 py-4 rounded-3xl bg-white/70 border border-purple-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent focus:ring-purple-400 transition-all shadow-sm"
                     />
                     <div x-show="isSearchingAlbums" class="absolute right-4 top-1/2 -translate-y-1/2">
@@ -441,7 +441,7 @@
                         type="text"
                         x-model="trackQuery"
                         @input.debounce.400ms="searchTracks()"
-                        placeholder="Buscar canciones en Spotify..."
+                        placeholder="Buscar canciones musicales..."
                         class="w-full pl-12 pr-4 py-4 rounded-3xl bg-white/70 border border-purple-200 text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent focus:ring-purple-400 transition-all shadow-sm"
                     />
                     <div x-show="isSearchingTracks" class="absolute right-4 top-1/2 -translate-y-1/2">
@@ -610,11 +610,32 @@
                                 <span class="bg-gradient-to-r from-purple-500 via-fuchsia-500 to-pink-500 bg-clip-text text-transparent">Semanal</span>
                             </h1>
                             <p class="text-lg text-gray-600 max-w-md" x-text="(dashboardData?.weekly_playlist?.length || 0) + ' canciones seleccionadas especialmente para ti, basadas en tus gustos musicales.'"></p>
-                            <div class="flex items-center gap-4">
-                                <button @click="playAll()" class="px-8 py-3.5 bg-purple-600 hover:bg-purple-700 text-white rounded-full font-bold text-sm tracking-wide transition-all shadow-lg hover:scale-105 hover:-translate-y-1 flex items-center gap-2">
-                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                                    Reproducir Todo
+
+                            <div class="flex items-center gap-4 py-4">
+                                <button @click="saveAllLikes()" class="px-6 py-2.5 bg-pink-100 hover:bg-pink-200 text-pink-700 rounded-full font-bold text-sm tracking-wide transition-all shadow-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-heart"></i>
+                                    Guardar en Me Gusta
                                 </button>
+                                
+                                <div class="relative" x-data="{ openExport: false }">
+                                    <button @click="openExport = !openExport" @click.away="openExport = false" class="px-6 py-2.5 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 rounded-full font-bold text-sm tracking-wide transition-all shadow-sm flex items-center gap-2">
+                                        <i class="fa-solid fa-file-export"></i>
+                                        Exportar
+                                        <i class="fa-solid fa-chevron-down text-xs ml-1"></i>
+                                    </button>
+                                    <div x-show="openExport" x-transition class="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                                        <button @click="exportList('Spotify'); openExport = false" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
+                                            <i class="fa-brands fa-spotify text-green-500"></i> Copiar para Spotify
+                                        </button>
+                                        <button @click="exportList('Apple Music'); openExport = false" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
+                                            <i class="fa-brands fa-apple text-gray-900"></i> Copiar para Apple Music
+                                        </button>
+                                        <button @click="exportList('YouTube'); openExport = false" class="w-full text-left px-4 py-2 hover:bg-gray-50 text-sm text-gray-700 flex items-center gap-2">
+                                            <i class="fa-brands fa-youtube text-red-500"></i> Copiar para YouTube
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                             </div>
                             {{-- Genre pills --}}
                             <div class="flex flex-wrap gap-2">
@@ -636,20 +657,28 @@
                                             <p class="text-sm font-semibold text-gray-900 truncate" x-text="track.name"></p>
                                             <p class="text-xs text-gray-500 truncate" x-text="track.artist"></p>
                                         </div>
-                                        <a :href="track.url" target="_blank" @click.stop class="text-green-500 hover:text-green-600 transition-colors opacity-0 group-hover:opacity-100" title="Abrir en Spotify">
-                                            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                                        </a>
+                                        <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button @click.stop="toggleLike(track, 'song')" class="text-gray-300 hover:text-pink-500 transition-colors" :class="likesCache['song_'+track.id] ? '!text-pink-500' : ''" title="Me Gusta">
+                                                <i class="fa-solid fa-heart text-lg"></i>
+                                            </button>
+                                            </button>
+                                            <a :href="'https://www.youtube.com/results?search_query=' + encodeURIComponent(track.artist + ' ' + track.name)" target="_blank" @click.stop class="text-red-500 hover:text-red-600 transition-colors" title="Abrir en YouTube">
+                                                <i class="fa-brands fa-youtube text-lg"></i>
+                                            </a>
+                                        </div>
                                     </div>
                                 </template>
 
-                                <template x-if="(dashboardData?.weekly_playlist || []).length > 8">
+                                {{-- "Ver todas" button (only when collapsed) --}}
+                                <template x-if="(dashboardData?.weekly_playlist || []).length > 8 && !showAllPlaylist">
                                     <div class="pt-2 text-center">
-                                        <button @click="showAllPlaylist = !showAllPlaylist" class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
-                                            <span x-text="showAllPlaylist ? 'Mostrar menos' : 'Ver todas las ' + dashboardData.weekly_playlist.length + ' canciones'"></span>
+                                        <button @click="showAllPlaylist = true" class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
+                                            <span x-text="'Ver todas las ' + dashboardData.weekly_playlist.length + ' canciones'"></span>
                                         </button>
                                     </div>
                                 </template>
 
+                                {{-- Extended tracks + "Mostrar menos" at the very bottom --}}
                                 <template x-if="showAllPlaylist">
                                     <div class="space-y-1 pt-1">
                                         <template x-for="(track, index) in (dashboardData?.weekly_playlist || []).slice(8)" :key="'pl2-' + track.id">
@@ -661,8 +690,22 @@
                                                     <p class="text-sm font-semibold text-gray-900 truncate" x-text="track.name"></p>
                                                     <p class="text-xs text-gray-500 truncate" x-text="track.artist"></p>
                                                 </div>
+                                                <div class="flex items-center gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button @click.stop="toggleLike(track, 'song')" class="text-gray-300 hover:text-pink-500 transition-colors" :class="likesCache['song_'+track.id] ? '!text-pink-500' : ''" title="Me Gusta">
+                                                        <i class="fa-solid fa-heart text-lg"></i>
+                                                    </button>
+                                                    </button>
+                                                    <a :href="'https://www.youtube.com/results?search_query=' + encodeURIComponent(track.artist + ' ' + track.name)" target="_blank" @click.stop class="text-red-500 hover:text-red-600 transition-colors" title="Abrir en YouTube">
+                                                        <i class="fa-brands fa-youtube text-lg"></i>
+                                                    </a>
+                                                </div>
                                             </div>
                                         </template>
+                                        <div class="pt-2 text-center">
+                                            <button @click="showAllPlaylist = false" class="text-xs font-semibold text-purple-600 hover:text-purple-800 transition-colors">
+                                                Mostrar menos
+                                            </button>
+                                        </div>
                                     </div>
                                 </template>
                             </div>
@@ -681,23 +724,29 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <template x-for="album in (dashboardData?.recommended_albums || [])" :key="'rec-' + album.id">
-                        <a :href="album.url" target="_blank" class="group cursor-pointer flex gap-5 bg-white/80 border border-purple-100 rounded-2xl shadow-sm p-4 hover:bg-white hover:shadow-md transition-all duration-300">
+                        <a :href="'https://www.youtube.com/results?search_query=' + encodeURIComponent(album.artist + ' ' + album.name)" target="_blank" class="group cursor-pointer flex gap-5 bg-white/80 border border-purple-100 rounded-2xl shadow-sm p-4 hover:bg-white hover:shadow-md transition-all duration-300">
                             <div class="relative overflow-hidden rounded-xl shadow-lg flex-shrink-0 w-32 h-32">
                                 <img :src="album.image || 'https://picsum.photos/seed/' + album.id + '/400/400'" :alt="album.name"
                                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105">
                                 <div class="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all duration-300 flex items-center justify-center">
-                                    <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
-                                        <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                                    <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0">
+                                        <i class="fa-solid fa-play text-white ml-1 text-sm"></i>
                                     </div>
                                 </div>
                             </div>
                             <div class="flex-1 min-w-0 flex flex-col justify-center">
                                 <h3 class="font-bold text-gray-900 text-lg truncate group-hover:text-purple-600 transition-colors" x-text="album.name"></h3>
                                 <p class="text-sm text-gray-500 mt-1" x-text="album.artist"></p>
-                                <span class="mt-3 inline-flex items-center gap-1 text-xs text-green-500 font-medium">
-                                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                                    Abrir en Spotify
-                                </span>
+                                <div class="mt-3 flex items-center justify-between">
+                                    <span class="inline-flex items-center gap-1 text-xs text-red-500 font-medium">
+                                        <i class="fa-brands fa-youtube"></i>
+                                        Abrir en YouTube
+                                    </span>
+                                    <button @click.prevent="toggleLike(album, 'album')" class="text-gray-300 hover:text-pink-500 transition-colors opacity-0 group-hover:opacity-100" :class="likesCache['album_'+album.id] ? '!text-pink-500 !opacity-100' : ''" title="Me Gusta">
+                                        <i class="fa-solid fa-heart text-xl"></i>
+                                    </button>
+                                    </button>
+                                </div>
                             </div>
                         </a>
                     </template>
@@ -714,13 +763,13 @@
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <template x-for="single in (dashboardData?.recommended_singles || [])" :key="'single-' + single.id">
-                        <a :href="single.url" target="_blank"
+                        <a :href="'https://www.youtube.com/results?search_query=' + encodeURIComponent(single.artist + ' ' + single.name)" target="_blank"
                            class="bg-white/80 border border-purple-100 rounded-2xl p-4 flex items-center gap-4 cursor-pointer hover:bg-white hover:shadow-md transition-all duration-300 group shadow-sm">
                             <div class="relative flex-shrink-0">
                                 <img :src="single.image || 'https://picsum.photos/seed/' + single.id + '/300/300'" :alt="single.name" class="w-16 h-16 rounded-lg object-cover shadow-lg group-hover:shadow-purple-300 transition-shadow">
                                 <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <div class="w-8 h-8 bg-green-500/90 rounded-full flex items-center justify-center">
-                                        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+                                    <div class="w-8 h-8 bg-red-500/90 rounded-full flex items-center justify-center">
+                                        <i class="fa-solid fa-play text-white ml-0.5 text-xs"></i>
                                     </div>
                                 </div>
                             </div>
@@ -736,54 +785,7 @@
         </div>
     </div>
 
-    {{-- ===== FLOATING PLAYER ===== --}}
-    <div x-show="currentTrack" x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="translate-y-full opacity-0"
-         x-transition:enter-end="translate-y-0 opacity-100"
-         class="fixed bottom-0 left-0 right-0 z-50">
-
-        <div class="bg-white/95 backdrop-blur-xl border border-purple-100 mx-4 mb-4 rounded-2xl shadow-xl shadow-purple-900/10">
-            <div class="h-1 bg-purple-100 rounded-t-2xl overflow-hidden">
-                <div class="h-full bg-gradient-to-r from-purple-500 to-fuchsia-400 rounded-full transition-all duration-1000"
-                     :style="'width: ' + progress + '%'"></div>
-            </div>
-            <div class="px-5 py-3 flex items-center gap-4">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                    <div class="w-12 h-12 rounded-lg bg-purple-50 flex items-center justify-center shadow-inner ring-1 ring-purple-200">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2s3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2s3 .895 3 2z"/>
-                        </svg>
-                    </div>
-                    <div class="min-w-0">
-                        <p class="text-sm font-bold text-gray-900 truncate" x-text="currentTrack?.name"></p>
-                        <p class="text-xs text-gray-500 truncate" x-text="currentTrack?.artist"></p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-3">
-                    <button @click="previousTrack()" class="text-gray-400 hover:text-purple-600 transition-colors p-1">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
-                    </button>
-                    <button @click="togglePlay()"
-                            class="w-10 h-10 rounded-full bg-purple-600 text-white flex items-center justify-center hover:bg-purple-700 transition-colors shadow-md hover:scale-105">
-                        <svg x-show="!isPlaying" class="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-                        <svg x-show="isPlaying" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
-                    </button>
-                    <button @click="nextTrackPlayer()" class="text-gray-400 hover:text-purple-600 transition-colors p-1">
-                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
-                    </button>
-                </div>
-                <div class="hidden sm:flex items-center gap-2 text-xs text-gray-500 font-medium">
-                    <span x-text="currentTime">0:00</span>
-                </div>
-                <a x-show="currentTrack?.url && currentTrack.url !== '#'" :href="currentTrack?.url" target="_blank" class="text-green-500 hover:text-green-600 transition-colors p-1" title="Abrir en Spotify">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
-                </a>
-                <button @click="stopPlayer()" class="text-gray-400 hover:text-red-500 transition-colors p-1 ml-1" title="Cerrar Reproductor">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                </button>
-            </div>
-        </div>
-    </div>
+    {{-- Reproductor eliminado en la vista Onboarding (flotante eliminado) --}}
 </div>
 
 <script>
@@ -893,6 +895,7 @@ function onboardingFlow() {
         currentTime: '0:00',
         showAllPlaylist: false,
         progressInterval: null,
+        likesCache: {},
 
         init() {
             this.loadGenres();
@@ -1140,11 +1143,116 @@ function onboardingFlow() {
             this.simulateProgress();
         },
 
-        playAll() {
-            const playlist = this.dashboardData?.weekly_playlist || [];
-            if (playlist.length > 0) {
-                this.playTrack(playlist[0], 0);
+        // --- Likes & Export ---
+        checkAuth() {
+            if (!{{ Auth::check() ? 'true' : 'false' }}) {
+                if (confirm('Debes iniciar sesión para usar los Me Gusta. ¿Quieres ir al login ahora?')) {
+                    window.location.href = '{{ route("login") }}';
+                }
+                return false;
             }
+            return true;
+        },
+
+        async toggleLike(item, type) {
+            if (!this.checkAuth()) return;
+
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+            if (!csrfToken) return;
+
+            const cacheKey = type + '_' + item.id;
+            const currentlyLiked = this.likesCache[cacheKey];
+
+            // Optimistic update
+            this.likesCache[cacheKey] = !currentlyLiked;
+
+            try {
+                const res = await fetch('{{ url("likes/toggle") }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        type: type,
+                        spotify_id: item.id,
+                        name: item.name,
+                        artist_name: item.artist,
+                        image_url: item.image || item.url || null
+                    }),
+                });
+                const data = await res.json();
+                if (data.status) {
+                    this.likesCache[cacheKey] = data.liked;
+                }
+            } catch (e) {
+                console.error('Failed to toggle like', e);
+                // Revert on error
+                this.likesCache[cacheKey] = currentlyLiked;
+            }
+        },
+
+        async saveAllLikes() {
+            if (!this.checkAuth()) return;
+
+            const playlist = this.dashboardData?.weekly_playlist || [];
+            if (playlist.length === 0) return;
+
+            // Notify user it started
+            alert('Guardando ' + playlist.length + ' canciones en tus Me Gusta...');
+
+            let successCount = 0;
+            for (const track of playlist) {
+                // If not already liked in cache, send request
+                const cacheKey = 'song_' + track.id;
+                if (!this.likesCache[cacheKey]) {
+                    try {
+                        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+                        const res = await fetch('{{ url("likes/toggle") }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': csrfToken,
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                type: 'song',
+                                spotify_id: track.id,
+                                name: track.name,
+                                artist_name: track.artist,
+                                image_url: track.image
+                            }),
+                        });
+                        const data = await res.json();
+                        if (data.liked) {
+                            this.likesCache[cacheKey] = true;
+                            successCount++;
+                        }
+                    } catch (e) {
+                        console.error('Failed to save track', track.name, e);
+                    }
+                }
+            }
+            alert(`¡Se guardaron las canciones correctamente en tus Me Gusta!`);
+        },
+
+        exportList(platform) {
+            const playlist = this.dashboardData?.weekly_playlist || [];
+            if (playlist.length === 0) return;
+
+            let text = `Mi Mix Semanal - Exportado para ${platform}\n\n`;
+            playlist.forEach((track, i) => {
+                text += `${i + 1}. ${track.name} - ${track.artist}\n`;
+            });
+            text += `\nGenerado con Recicled App. ¡Busca estas canciones en ${platform}!`;
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`¡Lista copiada al portapapeles! Puedes pegarla en cualquier herramienta para crear playlists en ${platform}.`);
+            }).catch(err => {
+                console.error('Error copying to clipboard', err);
+                alert('No se pudo copiar al portapapeles.');
+            });
         },
 
         togglePlay() {

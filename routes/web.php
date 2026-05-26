@@ -56,7 +56,6 @@ Route::group(['prefix' => 'panel/artista/{id}', 'as' => 'artist.panel.'], functi
     Route::post('/equipo', [App\Http\Controllers\ArtistTeamController::class, 'store'])->name('team.store');
     Route::delete('/equipo/{userId}', [App\Http\Controllers\ArtistTeamController::class, 'destroy'])->name('team.destroy');
 });
-Route::get('/artista/{id}', [\App\Http\Controllers\ArtistaController::class, 'show'])->name('artista.show');
 
 // Admin Routes
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -75,25 +74,30 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::delete('/usuarios/{id}', [App\Http\Controllers\AdminController::class, 'destroyUsuario'])->name('usuarios.destroy');
 });
 
-// Placeholder routes (to be implemented)
-Route::get('/cancion/{id}', [\App\Http\Controllers\CancionController::class, 'show'])->name('cancion.show');
-Route::get('/album/buscar/{artist}/{album}', [\App\Http\Controllers\AlbumController::class, 'showByItunes'])->name('album.itunes');
-Route::get('/album/{id}', [\App\Http\Controllers\AlbumController::class, 'show'])->name('album.show');
+// Rutas públicas con limitador de velocidad (protección anti-bots)
+Route::middleware(['throttle:60,1'])->group(function () {
+    Route::get('/artista/{id}', [\App\Http\Controllers\ArtistaController::class, 'show'])->name('artista.show');
 
-// Search API
-Route::get('/api/buscar', [\App\Http\Controllers\BusquedaController::class, 'buscar'])->name('api.buscar');
+    // Placeholder routes (to be implemented)
+    Route::get('/cancion/{id}', [\App\Http\Controllers\CancionController::class, 'show'])->name('cancion.show');
+    Route::get('/album/buscar/{artist}/{album}', [\App\Http\Controllers\AlbumController::class, 'showByItunes'])->name('album.itunes');
+    Route::get('/album/{id}', [\App\Http\Controllers\AlbumController::class, 'show'])->name('album.show');
 
-// Annotation API
-Route::post('/api/anotacion', [\App\Http\Controllers\AnnotationController::class, 'store'])->name('api.anotacion.store');
+    // Search API
+    Route::get('/api/buscar', [\App\Http\Controllers\BusquedaController::class, 'buscar'])->name('api.buscar');
 
-// MusicDiscovery
-Route::get('/discovery', [\App\Http\Controllers\DiscoveryController::class, 'showOnboarding'])->name('discovery');
-Route::get('/discovery/genres', [\App\Http\Controllers\DiscoveryController::class, 'getAvailableGenres'])->name('discovery.genres');
-Route::get('/discovery/search', [\App\Http\Controllers\DiscoveryController::class, 'searchSpotify'])->name('discovery.search');
-Route::post('/discovery/generate', [\App\Http\Controllers\DiscoveryController::class, 'generateDashboard'])->name('discovery.generate');
+    // Annotation API
+    Route::post('/api/anotacion', [\App\Http\Controllers\AnnotationController::class, 'store'])->name('api.anotacion.store');
 
-// Lanzamientos
-Route::get('/lanzamientos', [\App\Http\Controllers\ReleasesController::class, 'index'])->name('releases.index');
+    // MusicDiscovery
+    Route::get('/discovery', [\App\Http\Controllers\DiscoveryController::class, 'showOnboarding'])->name('discovery');
+    Route::get('/discovery/genres', [\App\Http\Controllers\DiscoveryController::class, 'getAvailableGenres'])->name('discovery.genres');
+    Route::get('/discovery/search', [\App\Http\Controllers\DiscoveryController::class, 'searchSpotify'])->name('discovery.search');
+    Route::post('/discovery/generate', [\App\Http\Controllers\DiscoveryController::class, 'generateDashboard'])->name('discovery.generate');
+
+    // Lanzamientos
+    Route::get('/lanzamientos', [\App\Http\Controllers\ReleasesController::class, 'index'])->name('releases.index');
+});
 
 // For You (TikTok style discovery)
 Route::middleware(['auth'])->group(function () {
@@ -105,6 +109,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/mis-megustas', [\App\Http\Controllers\LikesController::class, 'index'])->name('likes.index');
     Route::post('/api/likes/toggle', [\App\Http\Controllers\LikesController::class, 'toggle'])->name('likes.toggle');
     Route::get('/api/likes/check', [\App\Http\Controllers\LikesController::class, 'check'])->name('likes.check');
+    Route::post('/api/likes/import', [\App\Http\Controllers\LikesController::class, 'import'])->name('likes.import');
     Route::delete('/mis-megustas/{id}', [\App\Http\Controllers\LikesController::class, 'destroy'])->name('likes.destroy');
 });
 
