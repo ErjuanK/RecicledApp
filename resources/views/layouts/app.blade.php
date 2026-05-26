@@ -136,11 +136,9 @@
                         <a href="{{ route('profile') }}">
                             <i class="fa-solid fa-user"></i> Mi Perfil
                         </a>
-                        @if(Auth::user()->rol !== 'artista')
                         <a href="{{ route('likes.index') }}">
                             <i class="fa-solid fa-heart" style="color:#a855f7"></i> Mis Me Gustas
                         </a>
-                        @endif
                         <form method="POST" action="{{ route('logout') }}" id="logout-form">
                             @csrf
                             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
@@ -168,13 +166,7 @@
             <a href="{{ route('releases.index') }}">LANZAMIENTOS</a>
             <a href="{{ url('/discovery') }}">DESCUBRIMIENTOS</a>
             <a href="{{ url('/for-you') }}">PARA TI</a>
-            @auth
-                @if(Auth::user()->rol === 'artista')
-                <a href="{{ route('likes.index') }}" style="display:flex;align-items:center;gap:6px;">
-                    <i class="fa-solid fa-heart" style="color:#c084fc"></i> MIS ME GUSTAS
-                </a>
-                @endif
-            @endauth
+
         </nav>
     </div>
 
