@@ -499,6 +499,8 @@ class ItunesService
 
     /**
      * Get Track by ID.
+     * NOTE: Errors are intentionally NOT cached so a transient iTunes failure
+     * does not poison the cache and cause permanent 404s for the user.
      */
     public function getTrack($trackId): ?array
     {
@@ -508,39 +510,55 @@ class ItunesService
 
         $cacheKey = "itunes.track.{$trackId}";
 
-        return Cache::remember($cacheKey, 86400, function () use ($trackId) {
-            try {
-                $response = Http::get("https://itunes.apple.com/lookup", [
-                    'id' => $trackId
-                ]);
+        // Return cached successful result immediately
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
 
-                if ($response->successful()) {
-                    $data = $response->json();
-                    if (!empty($data['results'])) {
-                        $result = $data['results'][0];
-                        $highResImage = str_replace('100x100bb.jpg', '600x600bb.jpg', $result['artworkUrl100'] ?? '');
+        try {
+            $response = Http::timeout(8)->get("https://itunes.apple.com/lookup", [
+                'id' => $trackId
+            ]);
 
-                        return [
-                            'id'            => $result['trackId'],
-                            'name'          => $result['trackName'],
-                            'artists'       => [['id' => $result['artistId'] ?? null, 'name' => $result['artistName']]],
-                            'album'         => [
-                                'id' => $result['collectionId'],
-                                'name' => $result['collectionName'],
-                                'images' => [['url' => $highResImage]],
-                                'album_type' => 'album'
-                            ],
-                            'duration_ms'   => $result['trackTimeMillis'] ?? 0,
-                            'popularity'    => 50,
-                            'external_urls' => ['spotify' => $result['trackViewUrl'] ?? '#']
-                        ];
+            if ($response->successful()) {
+                $data = $response->json();
+                if (!empty($data['results'])) {
+                    $result = $data['results'][0];
+
+                    // Ensure we got an actual track, not an album or artist entry
+                    if (($result['wrapperType'] ?? '') !== 'track') {
+                        Log::warning("ItunesService::getTrack: ID {$trackId} resolved to wrapperType '{$result['wrapperType']}', not 'track'.");
+                        return ['error' => 'not_found'];
                     }
+
+                    $highResImage = str_replace('100x100bb.jpg', '600x600bb.jpg', $result['artworkUrl100'] ?? '');
+
+                    $mapped = [
+                        'id'            => $result['trackId'],
+                        'name'          => $result['trackName'] ?? 'Canción desconocida',
+                        'artists'       => [['id' => $result['artistId'] ?? null, 'name' => $result['artistName'] ?? 'Artista desconocido']],
+                        'album'         => [
+                            'id'         => $result['collectionId'] ?? null,
+                            'name'       => $result['collectionName'] ?? '',
+                            'images'     => [['url' => $highResImage]],
+                            'album_type' => 'album'
+                        ],
+                        'duration_ms'   => $result['trackTimeMillis'] ?? 0,
+                        'popularity'    => 50,
+                        'external_urls' => ['spotify' => $result['trackViewUrl'] ?? '#']
+                    ];
+
+                    // Only cache successful responses
+                    Cache::put($cacheKey, $mapped, 86400);
+                    return $mapped;
                 }
-            } catch (\Exception $e) {
-                Log::error('ItunesService::getTrack Error: ' . $e->getMessage());
             }
-            return ['error' => 'not_found'];
-        });
+        } catch (\Exception $e) {
+            Log::error('ItunesService::getTrack Error: ' . $e->getMessage());
+        }
+
+        // Return error but do NOT cache it — transient failures should be retryable
+        return ['error' => 'not_found'];
     }
 
     /**

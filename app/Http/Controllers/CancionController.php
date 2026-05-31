@@ -104,12 +104,12 @@ class CancionController extends Controller
 
         // 2. Fallback to iTunes Logic
         $trackData = $this->itunes->getTrack($id);
-        
+
         if ($trackData && !isset($trackData['error'])) {
             $minutes = floor($trackData['duration_ms'] / 60000);
             $seconds = ($trackData['duration_ms'] % 60000) / 1000;
-            
-            // Check if we have the song locally to get internal ID (Simplified logic from before)
+
+            // Check if we have the song locally to get internal ID
             $localCancion = \App\Models\Cancion::where('titulo', $trackData['name'])
                             ->whereHas('album.artista', function($q) use ($trackData) {
                                 $q->where('nombre_artistico', $trackData['artists'][0]['name']);
@@ -123,23 +123,22 @@ class CancionController extends Controller
             if ($localCancion) {
                 // Check for local lyrics
                 $localLetra = \App\Models\Letra::where('cancion_id', $localCancion->cancion_id)->first();
-                
+
                 if ($localLetra) {
                     $letraHtml = $localLetra->contenido;
                     $localLetraId = $localLetra->letra_id;
                     $anotaciones = $localLetra->anotaciones()->where('estado', 'aprobada')->get();
                 } else {
-                    $titTrack   = $trackData['name'];
+                    $titTrack    = $trackData['name'];
                     $nomArtTrack = $trackData['artists'][0]['name'];
                     $query = $titTrack . ' ' . $nomArtTrack;
                     $geniusData = $this->genius->buscarCancion($query);
 
                     if ($geniusData && isset($geniusData['url'])) {
-                        $geniusUrl  = $geniusData['url'];
-                        $letraHtml  = $this->genius->obtenerLetra($geniusUrl);
+                        $geniusUrl = $geniusData['url'];
+                        $letraHtml = $this->genius->obtenerLetra($geniusUrl);
                     }
 
-                    // Fallback si Cloudflare bloqueó Genius
                     if (!$letraHtml) {
                         $letraHtml = $this->genius->obtenerLetraFallback($nomArtTrack, $titTrack);
                     }
@@ -153,7 +152,7 @@ class CancionController extends Controller
                     }
                 }
             } else {
-                // Fallback for non-local songs (View only, no annotations)
+                // Fallback for non-local songs (view only, no annotations)
                 $titSong    = $trackData['name'];
                 $nomArtSong = $trackData['artists'][0]['name'];
                 $query = $titSong . ' ' . $nomArtSong;
@@ -164,7 +163,6 @@ class CancionController extends Controller
                     $letraHtml = $this->genius->obtenerLetra($geniusUrl);
                 }
 
-                // Fallback si Cloudflare bloqueó Genius
                 if (!$letraHtml) {
                     $letraHtml = $this->genius->obtenerLetraFallback($nomArtSong, $titSong);
                 }
@@ -172,33 +170,31 @@ class CancionController extends Controller
 
             // Build View Object
             $cancion = (object)[
-                'id' => $trackData['id'], // iTunes ID
-                'titulo' => $trackData['name'],
-                'portada_url' => $trackData['album']['images'][0]['url'] ?? asset('multimedia/img/default-song.jpg'),
-                'artista' => $trackData['artists'][0]['name'],
-                'artista_id' => $trackData['artists'][0]['id'],
-                'album' => $trackData['album']['name'],
-                'album_id' => $trackData['album']['id'],
-                'duracion' => sprintf("%d:%02d", $minutes, $seconds),
-                'creditos' => [
+                'id'            => $trackData['id'],
+                'titulo'        => $trackData['name'],
+                'portada_url'   => $trackData['album']['images'][0]['url'] ?? asset('multimedia/img/default-song.jpg'),
+                'artista'       => $trackData['artists'][0]['name'],
+                'artista_id'    => $trackData['artists'][0]['id'],
+                'album'         => $trackData['album']['name'],
+                'album_id'      => $trackData['album']['id'],
+                'duracion'      => sprintf("%d:%02d", $minutes, $seconds),
+                'creditos'      => [
                     ['rol' => 'Escrito por', 'nombres' => $trackData['artists'][0]['name']]
                 ],
-                'letra_html' => $letraHtml,
-                'url_genius' => $geniusUrl,
-                'letra_id' => $localLetraId, // Important for AJAX annotations
-                'anotaciones' => $anotaciones,
+                'letra_html'    => $letraHtml,
+                'url_genius'    => $geniusUrl,
+                'letra_id'      => $localLetraId,
+                'anotaciones'   => $anotaciones,
                 'letra_simulada' => [
                     "No se pudo cargar la letra automáticamente desde Genius.",
                     "Intenta visitar el enlace oficial: " . ($geniusUrl ?: "No disponible")
                 ]
             ];
-            
+
             return view('cancion', compact('cancion', 'likedSongs'));
-        } else {
-            if (isset($trackData['error'])) {
-                abort(404, 'Canción no encontrada o no disponible.');
-            }
-            abort(404, 'Canción no encontrada');
         }
+
+        // ── Canción no encontrada: página amigable en lugar de 404 feo ──
+        return view('cancion_no_encontrada', ['songId' => $id])->setStatusCode(404);
     }
 }
